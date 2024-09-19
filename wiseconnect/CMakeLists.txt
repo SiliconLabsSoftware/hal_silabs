@@ -47,8 +47,44 @@ zephyr_sources(
 )
 
 if(CONFIG_WIFI_SIWX917)
-
+zephyr_compile_definitions_ifdef(CONFIG_NET_IPV6
+    SLI_SI91X_ENABLE_IPV6
+)
+zephyr_compile_definitions(
+    SLI_SI91X_OFFLOAD_NETWORK_STACK
+    SLI_SI91X_SOCKETS
+)
 zephyr_include_directories(
+    resources/defaults
+)
+zephyr_sources(
+    components/device/silabs/si91x/wireless/sl_net/src/sl_si91x_net_credentials.c
+    components/device/silabs/si91x/wireless/sl_net/src/sl_si91x_net_internal_stack.c
+    components/device/silabs/si91x/wireless/sl_net/src/sl_net_si91x_integration_handler.c
+    components/device/silabs/si91x/wireless/sl_net/src/sl_net_rsi_utility.c
+    components/device/silabs/si91x/wireless/socket/src/sl_si91x_socket_utility.c
+    components/device/silabs/si91x/wireless/asynchronous_socket/src/sl_si91x_socket.c
+    components/service/network_manager/si91x/sl_net_si91x.c
+    components/service/network_manager/src/sl_net_basic_credentials.c
+    components/service/network_manager/src/sl_net_basic_profiles.c
+    components/service/network_manager/src/sl_net.c
+)
+endif() # CONFIG_WIFI_SIWX917
+
+zephyr_compile_definitions_ifdef(CONFIG_BT_SIWX917
+    SLI_SI91X_ENABLE_BLE=1
+    SL_SI91X_ENABLE_LITTLE_ENDIAN=1
+)
+zephyr_include_directories_ifdef(CONFIG_BT_SIWX917
+    components/device/silabs/si91x/wireless/ble/inc
+)
+zephyr_sources_ifdef(CONFIG_BT_SIWX917
+    components/device/silabs/si91x/wireless/ble/src/rsi_bt_ble.c
+    components/device/silabs/si91x/wireless/ble/src/rsi_common_apis.c
+    components/device/silabs/si91x/wireless/ble/src/rsi_utils.c
+)
+
+zephyr_include_directories_ifdef(CONFIG_SIWX917_NWP_NETWORK_STACK
     # FIXME: find why this directory is not included when CMSIS_RTOS_V2=y
     ${ZEPHYR_BASE}/include/zephyr/portability
     ${ZEPHYR_BASE}/include/zephyr/posix
@@ -61,20 +97,13 @@ zephyr_include_directories(
     components/device/silabs/si91x/mcu/core/chip/config
     components/protocol/wifi/inc
     components/service/network_manager/inc
-    resources/defaults
 )
-
-zephyr_compile_definitions(
-    SLI_SI91X_OFFLOAD_NETWORK_STACK
-    SLI_SI91X_SOCKETS
+zephyr_compile_definitions_ifdef(CONFIG_SIWX917_NWP_NETWORK_STACK
+    SLI_SI91X_ENABLE_OS
     SL_SI91X_SI917_RAM_MEM_CONFIG=1
-    SL_WIFI_COMPONENT_INCLUDED
+    SL_WIFI_COMPONENT_INCLUDED #Needed for BT as well...
 )
-zephyr_compile_definitions_ifdef(CONFIG_NET_IPV6
-    SLI_SI91X_ENABLE_IPV6
-)
-
-zephyr_sources(
+zephyr_sources_ifdef(CONFIG_SIWX917_NWP_NETWORK_STACK
     components/common/src/sl_utility.c
     components/device/silabs/si91x/wireless/ahb_interface/src/rsi_hal_mcu_m4_ram.c
     components/device/silabs/si91x/wireless/ahb_interface/src/rsi_hal_mcu_m4_rom.c
@@ -82,23 +111,12 @@ zephyr_sources(
     components/device/silabs/si91x/wireless/ahb_interface/src/sl_platform.c
     components/device/silabs/si91x/wireless/ahb_interface/src/sl_platform_wireless.c
     components/device/silabs/si91x/wireless/ahb_interface/src/sl_si91x_bus.c
-    components/device/silabs/si91x/wireless/asynchronous_socket/src/sl_si91x_socket.c
     components/device/silabs/si91x/wireless/host_mcu/si91x/siwx917_soc_ncp_host.c
     components/device/silabs/si91x/wireless/memory/malloc_buffers.c
-    components/device/silabs/si91x/wireless/sl_net/src/sl_si91x_net_credentials.c
-    components/device/silabs/si91x/wireless/sl_net/src/sl_si91x_net_internal_stack.c
-    components/device/silabs/si91x/wireless/sl_net/src/sl_net_si91x_integration_handler.c
-    components/device/silabs/si91x/wireless/sl_net/src/sl_net_rsi_utility.c
-    components/device/silabs/si91x/wireless/socket/src/sl_si91x_socket_utility.c
     components/device/silabs/si91x/wireless/src/sl_rsi_utility.c
     components/device/silabs/si91x/wireless/src/sl_si91x_callback_framework.c
     components/device/silabs/si91x/wireless/src/sl_si91x_driver.c
     components/device/silabs/si91x/wireless/threading/sli_si91x_multithreaded.c
     components/protocol/wifi/si91x/sl_wifi.c
     components/protocol/wifi/src/sl_wifi_callback_framework.c
-    components/service/network_manager/si91x/sl_net_si91x.c
-    components/service/network_manager/src/sl_net_basic_credentials.c
-    components/service/network_manager/src/sl_net_basic_profiles.c
-    components/service/network_manager/src/sl_net.c
 )
-endif() # CONFIG_WIFI_SIWX917
