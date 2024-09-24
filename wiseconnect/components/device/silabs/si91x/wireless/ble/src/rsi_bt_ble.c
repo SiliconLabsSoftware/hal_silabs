@@ -14,7 +14,7 @@
 * sections of the MSLA applicable to Source Code.
 *
 ******************************************************************************/
-#include "ble_config.h"
+#include "rsi_bt_common_config.h"
 
 #include "rsi_common.h"
 #include "cmsis_os2.h"
