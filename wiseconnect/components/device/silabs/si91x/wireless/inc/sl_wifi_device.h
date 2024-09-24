@@ -301,8 +301,8 @@
 
 /// @note Bit 30 is reserved
 
-/// Extention valid to use Extended custom feature bitmap
-#define SL_SI91X_CUSTOM_FEAT_EXTENTION_VALID BIT(31)
+/// Extension valid to use Extended custom feature bitmap
+#define SL_SI91X_CUSTOM_FEAT_EXTENSION_VALID BIT(31)
 /** @} */
 
 /** \addtogroup SI91X_EXTENDED_CUSTOM_FEATURE_BITMAP
@@ -576,7 +576,7 @@
 #define SL_SI91X_EXT_TCP_IP_FEAT_SSL_MEMORY_CLOUD BIT(30)
 
 /// config_feature_bit_map validity
-#define SL_SI91X_CONFIG_FEAT_EXTENTION_VALID BIT(31)
+#define SL_SI91X_CONFIG_FEAT_EXTENSION_VALID BIT(31)
 /** @} */
 
 /** \addtogroup SI91X_BT_FEATURE_BITMAP
@@ -687,8 +687,8 @@
 /// 0 for 9113 compatible; 1 for enabling 9116 BLE-compatible features.
 #define SL_SI91X_916_BLE_COMPATIBLE_FEAT_ENABLE BIT(30)
 
-/// Extention valid to use Extended custom feature bitmap
-#define SL_SI91X_FEAT_BLE_CUSTOM_FEAT_EXTENTION_VALID BIT(31)
+/// Extension valid to use Extended custom feature bitmap
+#define SL_SI91X_FEAT_BLE_CUSTOM_FEAT_EXTENSION_VALID BIT(31)
 /** @} */
 
 /** \addtogroup SI91X_EXTENDED_BLE_CUSTOM_FEATURE_BITMAP
@@ -999,7 +999,7 @@ static const sl_wifi_device_configuration_t sl_wifi_default_client_configuration
                                               | SL_SI91X_TCP_IP_FEAT_DHCPV6_CLIENT | SL_SI91X_TCP_IP_FEAT_IPV6
 #endif
                                               | SL_SI91X_TCP_IP_FEAT_ICMP | SL_SI91X_TCP_IP_FEAT_EXTENSION_VALID),
-                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENTION_VALID,
+                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENSION_VALID,
                    .ext_custom_feature_bit_map =
                      (SL_SI91X_EXT_FEAT_XTAL_CLK | SL_SI91X_EXT_FEAT_UART_SEL_FOR_DEBUG_PRINTS | MEMORY_CONFIG
 #ifdef SLI_SI917
@@ -1025,7 +1025,7 @@ static const sl_wifi_device_configuration_t sl_wifi_default_enterprise_client_co
                    .feature_bit_map        = (SL_SI91X_FEAT_SECURITY_OPEN | SL_SI91X_FEAT_AGGREGATION),
                    .tcp_ip_feature_bit_map = (SL_SI91X_TCP_IP_FEAT_DHCPV4_CLIENT | SL_SI91X_TCP_IP_FEAT_ICMP
                                               | SL_SI91X_TCP_IP_FEAT_EXTENSION_VALID),
-                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENTION_VALID,
+                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENSION_VALID,
                    .ext_custom_feature_bit_map =
                      (SL_SI91X_EXT_FEAT_XTAL_CLK | SL_SI91X_EXT_FEAT_UART_SEL_FOR_DEBUG_PRINTS | MEMORY_CONFIG
 #ifdef SLI_SI917
@@ -1071,14 +1071,14 @@ static const sl_wifi_device_configuration_t sl_wifi_default_concurrent_configura
                    .feature_bit_map        = SL_SI91X_FEAT_AGGREGATION,
                    .tcp_ip_feature_bit_map = (SL_SI91X_TCP_IP_FEAT_DHCPV4_CLIENT | SL_SI91X_TCP_IP_FEAT_DHCPV4_SERVER
                                               | SL_SI91X_TCP_IP_FEAT_ICMP | SL_SI91X_TCP_IP_FEAT_EXTENSION_VALID),
-                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENTION_VALID,
+                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENSION_VALID,
                    .ext_custom_feature_bit_map = (SL_SI91X_EXT_FEAT_XTAL_CLK | MEMORY_CONFIG
 #ifdef SLI_SI917
                                                   | SL_SI91X_EXT_FEAT_FRONT_END_SWITCH_PINS_ULP_GPIO_4_5_0
 #endif
                                                   ),
                    .bt_feature_bit_map         = 0,
-                   .ext_tcp_ip_feature_bit_map = SL_SI91X_CONFIG_FEAT_EXTENTION_VALID,
+                   .ext_tcp_ip_feature_bit_map = SL_SI91X_CONFIG_FEAT_EXTENSION_VALID,
                    .ble_feature_bit_map        = 0,
                    .ble_ext_feature_bit_map    = 0,
                    .config_feature_bit_map     = SL_SI91X_FEAT_SLEEP_GPIO_SEL_BITMAP }
@@ -1098,14 +1098,14 @@ static const sl_wifi_device_configuration_t sl_wifi_default_concurrent_v6_config
                       | SL_SI91X_TCP_IP_FEAT_DHCPV6_CLIENT | SL_SI91X_TCP_IP_FEAT_DHCPV6_SERVER
                       | SL_SI91X_TCP_IP_FEAT_IPV6 | SL_SI91X_TCP_IP_FEAT_ICMP | SL_SI91X_TCP_IP_FEAT_EXTENSION_VALID
                       | SL_SI91X_TCP_IP_FEAT_HTTP_CLIENT),
-                   .custom_feature_bit_map     = SL_SI91X_CUSTOM_FEAT_EXTENTION_VALID,
+                   .custom_feature_bit_map     = SL_SI91X_CUSTOM_FEAT_EXTENSION_VALID,
                    .ext_custom_feature_bit_map = (SL_SI91X_EXT_FEAT_XTAL_CLK | MEMORY_CONFIG
 #ifdef SLI_SI917
                                                   | SL_SI91X_EXT_FEAT_FRONT_END_SWITCH_PINS_ULP_GPIO_4_5_0
 #endif
                                                   ),
                    .bt_feature_bit_map         = 0,
-                   .ext_tcp_ip_feature_bit_map = SL_SI91X_CONFIG_FEAT_EXTENTION_VALID,
+                   .ext_tcp_ip_feature_bit_map = SL_SI91X_CONFIG_FEAT_EXTENSION_VALID,
                    .ble_feature_bit_map        = 0,
                    .ble_ext_feature_bit_map    = 0,
                    .config_feature_bit_map     = SL_SI91X_FEAT_SLEEP_GPIO_SEL_BITMAP }
@@ -1127,14 +1127,14 @@ static const sl_wifi_device_configuration_t sl_wifi_default_transmit_test_config
 #endif
                    .tcp_ip_feature_bit_map =
                      (SL_SI91X_TCP_IP_FEAT_DHCPV4_CLIENT | SL_SI91X_TCP_IP_FEAT_EXTENSION_VALID),
-                   .custom_feature_bit_map     = SL_SI91X_CUSTOM_FEAT_EXTENTION_VALID,
+                   .custom_feature_bit_map     = SL_SI91X_CUSTOM_FEAT_EXTENSION_VALID,
                    .ext_custom_feature_bit_map = (MEMORY_CONFIG
 #ifdef SLI_SI917
                                                   | SL_SI91X_EXT_FEAT_FRONT_END_SWITCH_PINS_ULP_GPIO_4_5_0
 #endif
                                                   ),
                    .bt_feature_bit_map         = SL_SI91X_BT_RF_TYPE,
-                   .ext_tcp_ip_feature_bit_map = SL_SI91X_CONFIG_FEAT_EXTENTION_VALID,
+                   .ext_tcp_ip_feature_bit_map = SL_SI91X_CONFIG_FEAT_EXTENSION_VALID,
                    .ble_feature_bit_map        = 0,
                    .ble_ext_feature_bit_map    = 0,
                    .config_feature_bit_map     = SL_SI91X_FEAT_SLEEP_GPIO_SEL_BITMAP }
@@ -1153,7 +1153,7 @@ static const sl_wifi_device_configuration_t sl_wifi_default_transceiver_configur
                    .feature_bit_map = SL_SI91X_FEAT_SECURITY_OPEN,
 #endif
                    .tcp_ip_feature_bit_map = SL_SI91X_TCP_IP_FEAT_BYPASS,
-                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENTION_VALID,
+                   .custom_feature_bit_map = SL_SI91X_CUSTOM_FEAT_EXTENSION_VALID,
                    .ext_custom_feature_bit_map =
                      (SL_SI91X_EXT_FEAT_XTAL_CLK | SL_SI91X_EXT_FEAT_UART_SEL_FOR_DEBUG_PRINTS
 #ifdef SLI_SI917
@@ -1161,7 +1161,7 @@ static const sl_wifi_device_configuration_t sl_wifi_default_transceiver_configur
 #endif
                       ),
                    .bt_feature_bit_map         = 0,
-                   .ext_tcp_ip_feature_bit_map = (SL_SI91X_CONFIG_FEAT_EXTENTION_VALID),
+                   .ext_tcp_ip_feature_bit_map = (SL_SI91X_CONFIG_FEAT_EXTENSION_VALID),
                    .ble_feature_bit_map        = 0,
                    .ble_ext_feature_bit_map    = 0,
                    .config_feature_bit_map     = 0 }
