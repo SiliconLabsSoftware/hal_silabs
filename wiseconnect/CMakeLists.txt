@@ -84,7 +84,7 @@ zephyr_sources_ifdef(CONFIG_BT_SIWX917
     components/device/silabs/si91x/wireless/ble/src/rsi_utils.c
 )
 
-zephyr_include_directories_ifdef(CONFIG_SIWX917_NWP_NETWORK_STACK
+zephyr_include_directories_ifdef(CONFIG_WISECONNECT_NETWORK_STACK
     # FIXME: find why this directory is not included when CMSIS_RTOS_V2=y
     ${ZEPHYR_BASE}/include/zephyr/portability
     ${ZEPHYR_BASE}/include/zephyr/posix
@@ -98,12 +98,12 @@ zephyr_include_directories_ifdef(CONFIG_SIWX917_NWP_NETWORK_STACK
     components/protocol/wifi/inc
     components/service/network_manager/inc
 )
-zephyr_compile_definitions_ifdef(CONFIG_SIWX917_NWP_NETWORK_STACK
+zephyr_compile_definitions_ifdef(CONFIG_WISECONNECT_NETWORK_STACK
     SLI_SI91X_ENABLE_OS
     SL_SI91X_SI917_RAM_MEM_CONFIG=1
     SL_WIFI_COMPONENT_INCLUDED #Needed for BT as well...
 )
-zephyr_sources_ifdef(CONFIG_SIWX917_NWP_NETWORK_STACK
+zephyr_sources_ifdef(CONFIG_WISECONNECT_NETWORK_STACK
     components/common/src/sl_utility.c
     components/device/silabs/si91x/wireless/ahb_interface/src/rsi_hal_mcu_m4_ram.c
     components/device/silabs/si91x/wireless/ahb_interface/src/rsi_hal_mcu_m4_rom.c
