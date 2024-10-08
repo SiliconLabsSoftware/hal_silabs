@@ -19,6 +19,7 @@ zephyr_include_directories(
 # Keep these values sync with
 # components/device/silabs/si91x/mcu/core/chip/component/siwg917*.slcc
 zephyr_compile_definitions(
+    SL_SI91X_ENABLE_LITTLE_ENDIAN
     SLI_SI91X_MCU_CONFIG_RADIO_BOARD_VER2
     SLI_SI91X_MCU_CONFIG_RADIO_BOARD_BASE_VER
     SLI_SI91X_MCU_ENABLE_FLASH_BASED_EXECUTION
@@ -79,7 +80,6 @@ endif() # CONFIG_WIFI_SIWX917
 
 zephyr_compile_definitions_ifdef(CONFIG_BT_SIWX917
     SLI_SI91X_ENABLE_BLE=1
-    SL_SI91X_ENABLE_LITTLE_ENDIAN=1
 )
 zephyr_include_directories_ifdef(CONFIG_BT_SIWX917
     components/device/silabs/si91x/wireless/ble/inc
