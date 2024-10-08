@@ -51,10 +51,11 @@ zephyr_sources_ifdef(CONFIG_ENTROPY_SILABS_SIWX917
 )
 
 if(CONFIG_WIFI_SIWX917)
+
 zephyr_compile_definitions_ifdef(CONFIG_NET_IPV6
     SLI_SI91X_ENABLE_IPV6
 )
-zephyr_compile_definitions(
+zephyr_compile_definitions_ifdef(CONFIG_WIFI_SIWX917_NET_STACK_OFFLOAD
     SLI_SI91X_OFFLOAD_NETWORK_STACK
     SLI_SI91X_SOCKETS
 )
@@ -73,6 +74,7 @@ zephyr_sources(
     components/service/network_manager/src/sl_net_basic_profiles.c
     components/service/network_manager/src/sl_net.c
 )
+
 endif() # CONFIG_WIFI_SIWX917
 
 zephyr_compile_definitions_ifdef(CONFIG_BT_SIWX917
