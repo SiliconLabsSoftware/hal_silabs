@@ -1,19 +1,31 @@
-/*******************************************************************************
+/***************************************************************************/ /**
 * @file  rsi_gpdma.h
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 // Includes Files
 
@@ -322,10 +334,10 @@ typedef GPDMA_C_Type RSI_GPDMAC_T;
 
 // brief GPDMA Driver Capabilities.
 typedef struct {
-  uint32_t noOfChannels : 4;         // Total supporting channels
-  uint32_t noOfMasterInterfaces : 2; // No of master interfaces supported
-  uint32_t noOfPeriSupport : 7;      // total supporting peripherals
-  uint32_t noOfPriorityLevels : 3;   // No of priority levels
+  unsigned int noOfChannels : 4;         // Total supporting channels
+  unsigned int noOfMasterInterfaces : 2; // No of master interfaces supported
+  unsigned int noOfPeriSupport : 7;      // total supporting peripherals
+  unsigned int noOfPriorityLevels : 3;   // No of priority levels
 
 } RSI_GPDMA_CAPABILITIES_T;
 
@@ -333,35 +345,35 @@ typedef struct {
 
 // brief chnl_ctrl_info
 typedef PRE_PACK struct POST_PACK {
-  uint32_t transSize : 12;       // Transfer lenght in bytes
-  uint32_t transType : 2;        // Type of DMA transfer
-  uint32_t dmaFlwCtrl : 2;       // Flow control type
-  uint32_t mastrIfFetchSel : 1;  // Master controller select to fetch data
-  uint32_t mastrIfSendSel : 1;   // Master controller select to send data
-  uint32_t destDataWidth : 2;    // Destination data width
-  uint32_t srcDataWidth : 2;     // Source data width
-  uint32_t srcAlign : 1;         // Source Alignment
-  uint32_t linkListOn : 1;       // Linked transfer on
-  uint32_t linkListMstrSel : 1;  // Master controller select for link transfers
-  uint32_t srcAddContiguous : 1; // Source address contiguous
-  uint32_t dstAddContiguous : 1; // Destination address contiguous
-  uint32_t retryOnErr : 1;       // Retry on error
-  uint32_t linkInterrupt : 1;    // Link interrupt enable
-  uint32_t srcFifoMode : 1;      // Source FIFO mode
-  uint32_t dstFifoMode : 1;      // Destination FIFO mode
-  uint32_t reserved : 1;
+  unsigned int transSize : 12;       // Transfer lenght in bytes
+  unsigned int transType : 2;        // Type of DMA transfer
+  unsigned int dmaFlwCtrl : 2;       // Flow control type
+  unsigned int mastrIfFetchSel : 1;  // Master controller select to fetch data
+  unsigned int mastrIfSendSel : 1;   // Master controller select to send data
+  unsigned int destDataWidth : 2;    // Destination data width
+  unsigned int srcDataWidth : 2;     // Source data width
+  unsigned int srcAlign : 1;         // Source Alignment
+  unsigned int linkListOn : 1;       // Linked transfer on
+  unsigned int linkListMstrSel : 1;  // Master controller select for link transfers
+  unsigned int srcAddContiguous : 1; // Source address contiguous
+  unsigned int dstAddContiguous : 1; // Destination address contiguous
+  unsigned int retryOnErr : 1;       // Retry on error
+  unsigned int linkInterrupt : 1;    // Link interrupt enable
+  unsigned int srcFifoMode : 1;      // Source FIFO mode
+  unsigned int dstFifoMode : 1;      // Destination FIFO mode
+  unsigned int reserved : 1;
 } RSI_GPDMA_CHA_CONTROL_T;
 
 //brief Misc_chnl_ctrl_info
 typedef PRE_PACK struct POST_PACK {
-  uint32_t ahbBurstSize : 3;  // AHB Burst size
-  uint32_t destDataBurst : 6; // Destination data Burst size
-  uint32_t srcDataBurst : 6;  // source data Burst size
-  uint32_t destChannelId : 6; // Dest channel ID
-  uint32_t srcChannelId : 6;  // Source channel ID
-  uint32_t dmaProt : 3;
-  uint32_t memoryFillEn : 1;  // Memory fill enable
-  uint32_t memoryOneFill : 1; // Memory fill with 1 or 0
+  unsigned int ahbBurstSize : 3;  // AHB Burst size
+  unsigned int destDataBurst : 6; // Destination data Burst size
+  unsigned int srcDataBurst : 6;  // source data Burst size
+  unsigned int destChannelId : 6; // Dest channel ID
+  unsigned int srcChannelId : 6;  // Source channel ID
+  unsigned int dmaProt : 3;
+  unsigned int memoryFillEn : 1;  // Memory fill enable
+  unsigned int memoryOneFill : 1; // Memory fill with 1 or 0
 } RSI_GPDMA_MISC_CHA_CONTROL_T;
 
 //brief GPDMA controller handle type

@@ -1,19 +1,31 @@
-/*******************************************************************************
+/***************************************************************************/ /**
 * @file  rsi_egpio.h
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 // Includes Files
 
@@ -105,7 +117,7 @@ extern "C" {
 #define PADSELECTION \
   (*(volatile uint32_t *)(0x41300000 + 0x610)) //  PAD selection (0 t0 21) A value of 1 on this gives control to M4SS
 
-#ifdef SLI_SI917
+#if defined(SLI_SI917) || defined(SLI_SI915)
 #define PADSELECTION_1 \
   (*(volatile uint32_t *)(0x41300000 + 0x618)) //  PAD selection (22 to 33) A value of 1 on this gives control to M4SS
 #endif
@@ -175,9 +187,9 @@ void egpio_set_dir(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin, boolean_t dir)
 
 void egpio_set_pin(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin, uint8_t val);
 
-boolean_t egpio_get_pin(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin);
+boolean_t egpio_get_pin(const EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin);
 
-boolean_t egpio_get_dir(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin);
+boolean_t egpio_get_dir(const EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin);
 
 void egpio_pin_int_sel(EGPIO_Type *pEGPIO, uint8_t intCh, uint8_t port, uint8_t pin);
 
@@ -201,7 +213,7 @@ void egpio_set_int_high_level_enable(EGPIO_Type *pEGPIO, uint8_t intCh);
 
 void egpio_set_int_high_level_disable(EGPIO_Type *pEGPIO, uint8_t intCh);
 
-uint8_t egpio_get_int_stat(EGPIO_Type *pEGPIO, uint8_t intCh);
+uint8_t egpio_get_int_stat(const EGPIO_Type *pEGPIO, uint8_t intCh);
 
 void egpio_int_clr(EGPIO_Type *pEGPIO, uint8_t intCh, uint8_t flags);
 
@@ -225,7 +237,7 @@ void egpio_clr_port(EGPIO_Type *pEGPIO, uint8_t port, uint16_t val);
 
 void egpio_toggle_port(EGPIO_Type *pEGPIO, uint8_t port, uint16_t val);
 
-uint16_t egpio_get_port(EGPIO_Type *pEGPIO, uint8_t port);
+uint16_t egpio_get_port(const EGPIO_Type *pEGPIO, uint8_t port);
 
 void egpio_group_int_one_enable(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin);
 
@@ -249,7 +261,7 @@ void egpio_group_int_and(EGPIO_Type *pEGPIO, uint8_t grpInt);
 
 void egpio_group_int_or(EGPIO_Type *pEGPIO, uint8_t grpInt);
 
-uint32_t egpio_group_int_stat(EGPIO_Type *pEGPIO, uint8_t grpInt);
+uint32_t egpio_group_int_stat(const EGPIO_Type *pEGPIO, uint8_t grpInt);
 
 void egpio_group_int_wkeup_Enable(EGPIO_Type *pEGPIO, uint8_t grpInt);
 

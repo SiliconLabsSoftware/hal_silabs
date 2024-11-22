@@ -1,17 +1,29 @@
-/*******************************************************************************
+/******************************************************************************
 * @file  rsi_rom_udma.h
-* @brief 
 *******************************************************************************
 * # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
+* <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
 *******************************************************************************
 *
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
+* SPDX-License-Identifier: Zlib
+*
+* The licensor of this software is Silicon Laboratories Inc.
+*
+* This software is provided 'as-is', without any express or implied
+* warranty. In no event will the authors be held liable for any damages
+* arising from the use of this software.
+*
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+*
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
 *
 ******************************************************************************/
 
@@ -111,7 +123,7 @@ extern "C" {
  * @return 		  \ref RSI_OK if no errors occurred, or an error code
  */
 STATIC INLINE rsi_error_t RSI_UDMA_SetupChannelTransfer(RSI_UDMA_HANDLE_T pHandle,
-                                                        RSI_UDMA_CHA_CFG_T *pCfg,
+                                                        const RSI_UDMA_CHA_CFG_T *pCfg,
                                                         RSI_UDMA_CHA_CONFIG_DATA_T vsUdmaChaConfigData,
                                                         void *pSrcAddr,
                                                         void *pDstAddr)
@@ -166,7 +178,7 @@ STATIC INLINE rsi_error_t RSI_UDMA_SetChannelScatterGatherTransfer(RSI_UDMA_HAND
 								complete, then 0 is returned.
  */
 STATIC INLINE uint32_t RSI_UDMA_GetChannelTransferLength(RSI_UDMA_HANDLE_T pHandle,
-                                                         RSI_UDMA_CHA_CFG_T *pCfg,
+                                                         const RSI_UDMA_CHA_CFG_T *pCfg,
                                                          RSI_UDMA_CHA_CONFIG_DATA_T vsUDMAChaConfigData)
 {
 #if defined(UDMA_ROMDRIVER_PRESENT)
@@ -177,7 +189,7 @@ STATIC INLINE uint32_t RSI_UDMA_GetChannelTransferLength(RSI_UDMA_HANDLE_T pHand
 }
 /**
 
- * @fn          STATIC INLINE uint32_t  RSI_UDMA_GetChannelTransferMode(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg)
+ * @fn          STATIC INLINE uint32_t  RSI_UDMA_GetChannelTransferMode(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg)
  * @brief		    Gets the transfer mode for a UDMA channel control structure.
  * @param[in]	   pHandle	:  Pointer to driver context handle
  * @param[in]   pCfg	  : Pointer to DMA channel configuration structure \RSI_UDMA_CHA_CFG_T required parameter below
@@ -198,7 +210,7 @@ STATIC INLINE uint32_t RSI_UDMA_GetChannelTransferLength(RSI_UDMA_HANDLE_T pHand
                           - \ref UDMA_MODE_PER_SCATTER_GATHER
  */
 
-STATIC INLINE uint32_t RSI_UDMA_GetChannelTransferMode(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg)
+STATIC INLINE uint32_t RSI_UDMA_GetChannelTransferMode(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg)
 {
 #if defined(UDMA_ROMDRIVER_PRESENT)
   return ROMAPI_UDMA_API->udma_get_channel_transfer_mode(pHandle, pCfg);
@@ -239,7 +251,7 @@ STATIC INLINE RSI_UDMA_HANDLE_T RSI_UDMA_Init(void *mem, const RSI_UDMA_INIT_T *
                           - \ref dmaCh           :dma channel number(0-31)
  * @return 		  - \ref  RSI_OK if no errors occurred, or an error code
  */
-STATIC INLINE rsi_error_t RSI_UDMA_SetupChannel(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg)
+STATIC INLINE rsi_error_t RSI_UDMA_SetupChannel(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg)
 {
 #if defined(UDMA_ROMDRIVER_PRESENT)
   return ROMAPI_UDMA_API->udma_setup_channel(pHandle, pCfg);
@@ -248,13 +260,13 @@ STATIC INLINE rsi_error_t RSI_UDMA_SetupChannel(RSI_UDMA_HANDLE_T pHandle, RSI_U
 #endif
 }
 /**
- * @fn          STATIC INLINE void  RSI_UDMA_DeInit(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg)
+ * @fn          STATIC INLINE void  RSI_UDMA_DeInit(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg)
  * @brief		    This API is used to Uninitialized driver context parameters
  * @param[in]   pHandle	: Pointer to driver context handle
  * @param[in]   pCfg	  : Pointer to DMA channel configuration structure
  * @return 		  none
  */
-STATIC INLINE void RSI_UDMA_DeInit(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg)
+STATIC INLINE void RSI_UDMA_DeInit(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg)
 {
 #if defined(UDMA_ROMDRIVER_PRESENT)
   ROMAPI_UDMA_API->udma_deInit(pHandle, pCfg);
@@ -299,7 +311,7 @@ STATIC INLINE rsi_error_t RSI_UDMA_InterruptEnable(RSI_UDMA_HANDLE_T pHandle, ui
 								              UDMA ROM FUNCTION PROTOTYPES											  
 		 **************************************************************************************/
 rsi_error_t RSI_UDMA_SetupChannelTransfer(RSI_UDMA_HANDLE_T pHandle,
-                                          RSI_UDMA_CHA_CFG_T *pCfg,
+                                          const RSI_UDMA_CHA_CFG_T *pCfg,
                                           RSI_UDMA_CHA_CONFIG_DATA_T vsUdmaChaConfigData,
                                           void *pSrcAddr,
                                           void *pDstAddr);
@@ -311,16 +323,16 @@ rsi_error_t RSI_UDMA_SetChannelScatterGatherTransfer(RSI_UDMA_HANDLE_T pHandle,
                                                      uint32_t transferType);
 
 uint32_t RSI_UDMA_GetChannelTransferLength(RSI_UDMA_HANDLE_T pHandle,
-                                           RSI_UDMA_CHA_CFG_T *pCfg,
+                                           const RSI_UDMA_CHA_CFG_T *pCfg,
                                            RSI_UDMA_CHA_CONFIG_DATA_T vsUDMAChaConfigData);
 
-uint32_t RSI_UDMA_GetChannelTransferMode(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg);
+uint32_t RSI_UDMA_GetChannelTransferMode(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg);
 
 RSI_UDMA_HANDLE_T RSI_UDMA_Init(void *mem, const RSI_UDMA_INIT_T *pInit);
 
-rsi_error_t RSI_UDMA_SetupChannel(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg);
+rsi_error_t RSI_UDMA_SetupChannel(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg);
 
-void RSI_UDMA_DeInit(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg);
+static void RSI_UDMA_DeInit(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg);
 
 void RSI_UDMA_Interrupthandler(RSI_UDMA_HANDLE_T pHandle);
 
