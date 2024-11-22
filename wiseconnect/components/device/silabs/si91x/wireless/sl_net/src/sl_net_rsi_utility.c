@@ -38,7 +38,7 @@
 #include <string.h>
 
 sl_status_t convert_rsi_ipv4_address_to_sl_ip_address(sl_ip_address_t *ip_address_buffer,
-                                                      sl_si91x_rsp_ipv4_params_t *ip_params)
+                                                      const sl_si91x_rsp_ipv4_params_t *ip_params)
 {
   // Verify input pointers
   SL_VERIFY_POINTER_OR_RETURN(ip_address_buffer, SL_STATUS_WIFI_NULL_PTR_ARG);
@@ -53,7 +53,7 @@ sl_status_t convert_rsi_ipv4_address_to_sl_ip_address(sl_ip_address_t *ip_addres
   return SL_STATUS_OK;
 }
 
-sl_status_t convert_si91x_dns_response(sl_ip_address_t *ip_address, sl_si91x_dns_response_t *si91x_dns_response)
+sl_status_t convert_si91x_dns_response(sl_ip_address_t *ip_address, const sl_si91x_dns_response_t *si91x_dns_response)
 {
   SL_VERIFY_POINTER_OR_RETURN(ip_address, SL_STATUS_WIFI_NULL_PTR_ARG);
   SL_VERIFY_POINTER_OR_RETURN(si91x_dns_response, SL_STATUS_WIFI_NULL_PTR_ARG);
@@ -68,7 +68,8 @@ sl_status_t convert_si91x_dns_response(sl_ip_address_t *ip_address, sl_si91x_dns
                                 == SL_IPV4_ADDRESS_LENGTH
                               ? SL_IPV4_ADDRESS_LENGTH
                               : SL_IPV6_ADDRESS_LENGTH;
-  uint8_t *sl_ip_address, *si91x_ip_address;
+  uint8_t *sl_ip_address;
+  const uint8_t *si91x_ip_address;
 
   ip_address->type = ip_address_size == SL_IPV4_ADDRESS_LENGTH ? SL_IPV4 : SL_IPV6;
 
@@ -81,14 +82,14 @@ sl_status_t convert_si91x_dns_response(sl_ip_address_t *ip_address, sl_si91x_dns
   return SL_STATUS_OK;
 }
 
-sl_status_t convert_si91x_event_to_sl_net_event(uint16_t *event, sl_net_event_t *sl_net_event)
+sl_status_t convert_si91x_event_to_sl_net_event(const uint16_t *event, sl_net_event_t *sl_net_event)
 {
   // Verify input pointers
   SL_WIFI_ARGS_CHECK_NULL_POINTER(event);
   SL_WIFI_ARGS_CHECK_NULL_POINTER(sl_net_event);
 
   // Map SI91X events to SimpleLink network events
-  switch ((*event)) {
+  switch (*event) {
     case RSI_WLAN_RSP_DNS_QUERY: {
       *sl_net_event = SL_NET_DNS_RESOLVE_EVENT;
       return SL_STATUS_OK;
@@ -105,10 +106,13 @@ sl_status_t convert_si91x_event_to_sl_net_event(uint16_t *event, sl_net_event_t 
       *sl_net_event = SL_NET_DHCP_NOTIFICATION_EVENT;
       return SL_STATUS_OK;
     }
-    case RSI_WLAN_RSP_IPV4_CHANGE: {
+    case RSI_WLAN_RSP_IPV4_CHANGE:
+    case RSI_WLAN_RSP_IPCONFV6: {
       *sl_net_event = SL_NET_IP_ADDRESS_CHANGE_EVENT;
       return SL_STATUS_OK;
     }
+    default:
+      break;
   }
 
   return SL_STATUS_FAIL;
@@ -118,7 +122,8 @@ sl_status_t convert_si91x_event_to_sl_net_event(uint16_t *event, sl_net_event_t 
 // Convert integer to string
 void convert_itoa(uint32_t val, uint8_t *str)
 {
-  int16_t ii = 0, jj = 0;
+  int16_t ii = 0;
+  int16_t jj = 0;
   uint8_t tmp[10];
 
   if (val == 0) {
@@ -143,7 +148,8 @@ void convert_itoa(uint32_t val, uint8_t *str)
   str[jj] = '\0';
 }
 
-sl_status_t convert_si91x_event_to_sl_http_client_event(uint16_t *event, sl_http_client_event_t *sl_http_client_event)
+sl_status_t convert_si91x_event_to_sl_http_client_event(const uint16_t *event,
+                                                        sl_http_client_event_t *sl_http_client_event)
 {
   // Verify input pointer
   SL_WIFI_ARGS_CHECK_NULL_POINTER(event);
@@ -165,6 +171,8 @@ sl_status_t convert_si91x_event_to_sl_http_client_event(uint16_t *event, sl_http
       *sl_http_client_event = SL_HTTP_CLIENT_PUT_RESPONSE_EVENT;
       return SL_STATUS_OK;
     }
+    default:
+      break;
   }
 
   return SL_STATUS_FAIL;

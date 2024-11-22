@@ -1,20 +1,31 @@
 /*******************************************************************************
 * @file  rsi_udma.h
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
-
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 //Include Files
 
 #include "rsi_ccp_common.h"
@@ -201,17 +212,17 @@ typedef struct {
 
 // brief  UDMA Channel Config structure
 typedef struct {
-  uint32_t transferType : 3; // The operating mode of the DMA cycle
-  uint32_t
+  unsigned int transferType : 3; // The operating mode of the DMA cycle
+  unsigned int
     nextBurst : 1; // Used to force the channel to only respond to burst requests at the tail end of a scatter-gather transfer
-  uint32_t totalNumOfDMATrans : 10; // total number of DMA transfers that the DMA cycle contains
-  uint32_t rPower : 4;              // Number of DMA transfers can occur before the controller rearbitrates
-  uint32_t srcProtCtrl : 3;         // Performs control operation when the controller reads the source data
-  uint32_t dstProtCtrl : 3;         // Performs control operation when the controller writes the destination data
-  uint32_t srcSize : 2;             // Source data size
-  uint32_t srcInc : 2;              // Source address increment
-  uint32_t dstSize : 2;             // Destination data size
-  uint32_t dstInc : 2;              // Destination address increment
+  unsigned int totalNumOfDMATrans : 10; // total number of DMA transfers that the DMA cycle contains
+  unsigned int rPower : 4;              // Number of DMA transfers can occur before the controller rearbitrates
+  unsigned int srcProtCtrl : 3;         // Performs control operation when the controller reads the source data
+  unsigned int dstProtCtrl : 3;         // Performs control operation when the controller writes the destination data
+  unsigned int srcSize : 2;             // Source data size
+  unsigned int srcInc : 2;              // Source address increment
+  unsigned int dstSize : 2;             // Destination data size
+  unsigned int dstInc : 2;              // Destination address increment
 } RSI_UDMA_CHA_CONFIG_DATA_T;
 
 // brief  UDMA Control Structure.
@@ -316,14 +327,14 @@ STATIC INLINE void RSI_UDMA_UDMADisable(RSI_UDMA_HANDLE_T pHandle)
 
 /*===================================================*/
 /**
- * @fn          uint8_t RSI_UDMA_ErrorStatusGet(RSI_UDMA_T *pUDMA)
+ * @fn          uint8_t RSI_UDMA_ErrorStatusGet(const RSI_UDMA_T *pUDMA)
  * @brief		This API is used to get the error status/sets the signal low of UDMA.
  * @param[in]	pUDMA     : Pointer to the UDMA instance register area
  * @return 		Returns error status as below
  *              - 0 : Error is LOW
  *              - 1 : Error is HIGH
  */
-STATIC INLINE uint8_t RSI_UDMA_ErrorStatusGet(RSI_UDMA_T *pUDMA)
+STATIC INLINE uint8_t RSI_UDMA_ErrorStatusGet(const RSI_UDMA_T *pUDMA)
 {
   return (pUDMA->ERR_CLR_b.ERR_CLR);
 }
@@ -389,7 +400,7 @@ STATIC INLINE rsi_error_t RSI_UDMA_ChannelDisable(RSI_UDMA_HANDLE_T pHandle, uin
  */
 STATIC INLINE rsi_error_t RSI_UDMA_ChannelIsEnabled(RSI_UDMA_HANDLE_T pHandle, uint8_t dmaCh)
 {
-  RSI_UDMA_DATACONTEXT_T *pDrv = (RSI_UDMA_DATACONTEXT_T *)pHandle;
+  const RSI_UDMA_DATACONTEXT_T *pDrv = (const RSI_UDMA_DATACONTEXT_T *)pHandle;
   if (dmaCh <= CHNL_31) {
     if (((pDrv->base->CHNL_ENABLE_SET) & SET_BIT(dmaCh)) != 0) {
       return RSI_OK;
@@ -477,8 +488,8 @@ STATIC INLINE rsi_error_t RSI_UDMA_InterruptClear(RSI_UDMA_HANDLE_T pHandle, uin
  */
 STATIC INLINE uint32_t RSI_UDMA_InterruptStatus(RSI_UDMA_HANDLE_T pHandle, uint8_t dmaCh)
 {
-  uint32_t intr_stat           = 0;
-  RSI_UDMA_DATACONTEXT_T *pDrv = (RSI_UDMA_DATACONTEXT_T *)pHandle;
+  uint32_t intr_stat                 = 0;
+  const RSI_UDMA_DATACONTEXT_T *pDrv = (const RSI_UDMA_DATACONTEXT_T *)pHandle;
 
   intr_stat = pDrv->base->UDMA_DONE_STATUS_REG;
   return (intr_stat & SET_BIT(dmaCh));
@@ -519,7 +530,7 @@ STATIC INLINE uint8_t RSI_UDMA_GetControllerEnableStatus(RSI_UDMA_HANDLE_T pHand
  */
 STATIC INLINE uint32_t RSI_UDMA_GetControlState(RSI_UDMA_HANDLE_T pHandle)
 {
-  RSI_UDMA_DATACONTEXT_T *pDrv = (RSI_UDMA_DATACONTEXT_T *)pHandle;
+  const RSI_UDMA_DATACONTEXT_T *pDrv = (const RSI_UDMA_DATACONTEXT_T *)pHandle;
   return (pDrv->base->DMA_STATUS_b.STATE);
 }
 
@@ -530,13 +541,13 @@ RSI_UDMA_CAPABILITIES_T RSI_UDMA_GetCapabilities(void);
 
 RSI_UDMA_HANDLE_T udma_init(void *mem, const RSI_UDMA_INIT_T *pInit);
 
-uint32_t udma_get_channel_transfer_mode(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg);
+uint32_t udma_get_channel_transfer_mode(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg);
 
 rsi_error_t udma_setup_channel_transfer(RSI_UDMA_HANDLE_T pHandle,
-                                        RSI_UDMA_CHA_CFG_T *pCfg,
+                                        const RSI_UDMA_CHA_CFG_T *pCfg,
                                         RSI_UDMA_CHA_CONFIG_DATA_T vsUdmaChaConfigData,
                                         void *pSrcAddr,
-                                        void *pDstAddr);
+                                        volatile void *pDstAddr);
 
 rsi_error_t udma_set_channel_scatter_gather_transfer(RSI_UDMA_HANDLE_T pHandle,
                                                      uint8_t dmaCh,
@@ -545,19 +556,19 @@ rsi_error_t udma_set_channel_scatter_gather_transfer(RSI_UDMA_HANDLE_T pHandle,
                                                      uint32_t transferType);
 
 uint32_t udma_get_channel_transfer_length(RSI_UDMA_HANDLE_T pHandle,
-                                          RSI_UDMA_CHA_CFG_T *pCfg,
+                                          const RSI_UDMA_CHA_CFG_T *pCfg,
                                           RSI_UDMA_CHA_CONFIG_DATA_T vsUDMAChaConfigData);
 
-rsi_error_t udma_setup_channel(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg);
+rsi_error_t udma_setup_channel(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg);
 
-void udma_deInit(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg);
+void udma_deInit(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg);
 
 void udma_interrupt_handler(RSI_UDMA_HANDLE_T pHandle);
 
 rsi_error_t udma_interrupt_enable(RSI_UDMA_HANDLE_T pHandle, uint8_t dmaCh);
-rsi_error_t RSI_UDMA_ChannelControlsDisable(RSI_UDMA_HANDLE_T pHandle, RSI_UDMA_CHA_CFG_T *pCfg);
+rsi_error_t RSI_UDMA_ChannelControlsDisable(RSI_UDMA_HANDLE_T pHandle, const RSI_UDMA_CHA_CFG_T *pCfg);
 void RSI_UDMA_SetSingleRequest(RSI_UDMA_HANDLE_T pHandle);
-void RSI_UDMA_AckEnable(RSI_UDMA_HANDLE_T pHandle, uint32_t peripheral);
+void RSI_UDMA_AckEnable(const void *pHandle, uint32_t peripheral);
 
 #ifdef __cplusplus
 }

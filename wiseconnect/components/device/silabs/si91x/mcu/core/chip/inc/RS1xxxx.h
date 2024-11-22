@@ -1,17 +1,29 @@
-/*******************************************************************************
+/******************************************************************************
 * @file  RS1xxxx.h
-* @brief 
 *******************************************************************************
 * # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
+* <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
 *******************************************************************************
 *
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
+* SPDX-License-Identifier: Zlib
+*
+* The licensor of this software is Silicon Laboratories Inc.
+*
+* This software is provided 'as-is', without any express or implied
+* warranty. In no event will the authors be held liable for any damages
+* arising from the use of this software.
+*
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+*
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
 *
 ******************************************************************************/
 
@@ -108,10 +120,10 @@ typedef enum {
   I2S0_IRQn                        = 64,
   CAN1_IRQn                        = 66, /*!<  67  CAN1                                                             */
   SDMEM_IRQn                       = 68, /*!<  68  SDMEM interrput						     */
-  PLL_CLOCK_IRQn                   = 69, /*!<  69  PLL CLOCK INTERRUOT 					     */
+  PLL_CLOCK_IRQn                   = 69, /*!<  69  PLL CLOCK INTERRUPT 					     */
   CCI_IRQn                         = 71, /*!<  71  CCI                                                              */
   USB_IRQn                         = 73, /*!<  73  USB                                                              */
-  TASS_P2P_IRQn                    = 74  /*!<  TA to M4 Interrupt						     */
+  TASS_P2P_IRQn                    = 74  /*!<  NWP to M4 Interrupt						     */
 } IRQn_Type;
 
 /** @addtogroup Configuration_of_CMSIS
@@ -3230,9 +3242,9 @@ typedef struct { /*!< QEI Structure                                             
 
     struct {
       __I uint32_t VELOCITY_VALUE_TO_COMPARE_L : 16; /*!< If read :Velocity value to compare with velocity count LSW If
-                                                         write :Velocity LSW count to compare using TA firmware                */
+                                                         write :Velocity LSW count to compare using NWP firmware                */
       __O uint32_t VELOCITY_VALUE_TO_COMPARE_H : 16; /*!< If write :Velocity value to compare with velocity count MSW.
-                                                         If read :Velocity MSW count to compare using TA firmware              */
+                                                         If read :Velocity MSW count to compare using NWP firmware              */
     } QEI_VELOCITY_REG_b; /*!< BitSize                                                               */
   };
   __I uint32_t RESERVED3;
@@ -10979,7 +10991,7 @@ typedef struct {
       __IO uint32_t MCU_ULP_32KHZ_RC_CLK_EN_b : 1;
       __IO uint32_t MCU_ULP_32KHZ_RO_CLK_EN_b : 1;
       __IO uint32_t MCU_ULP_32KHZ_XTAL_CLK_EN_b : 1;
-      __IO uint32_t MCU_ULP_32MHZ_RC_CLK_EN_b : 1;
+      __IO uint32_t MCU_ULP_MHZ_RC_CLK_EN_b : 1;
       __IO uint32_t MCU_ULP_20MHZ_RING_OSC_CLK_EN_b : 1;
       __IO uint32_t MCU_ULP_DOUBLER_CLK_EN_b : 1;
       __IO uint32_t MCU_ULP_40MHZ_CLK_EN_b : 1;
@@ -11713,7 +11725,7 @@ typedef struct {
       __IO uint32_t ULP_32KHZ_XTAL_CLK_EN_PROG_b : 1;
       __IO uint32_t ULP_DOUBLER_CLK_EN_PROG_b : 1;
       __IO uint32_t ULP_20MHZ_RO_CLK_EN_PROG_b : 1;
-      __IO uint32_t ULP_32MHZ_RC_CLK_EN_PROG_b : 1;
+      __IO uint32_t ULP_MHZ_RC_CLK_EN_PROG_b : 1;
       __IO uint32_t SOC_CLK_EN_PROG_b : 1;
       __IO uint32_t I2S_PLLCLK_EN_PROG_b : 1;
       __IO uint32_t REF_CLK_EN_IPS_PROG_b : 1;
@@ -12194,7 +12206,7 @@ typedef struct { /*!< (@ 0x24043800) AUX_ADC_DAC_COMP Structure                 
       __IOM uint32_t
         DAC_FIFO_FLUSH : 1; /*!< [2..2] This bit is used to flush the DAC FIFO.                            */
       __IOM uint32_t DAC_FIFO_THRESHOLD : 3; /*!< [5..3] These bits control the DAC FIFO threshold. When used
-                                                     by DMA, this will act as almost full threshold. For TA,
+                                                     by DMA, this will act as almost full threshold. For NWP,
                                                      it acts as almost empty threshold                                         */
       __IOM uint32_t DAC_ENABLE_F : 1;       /*!< [6..6] This bit is used to enable AUX DAC controller ,valid
                                                      only when DAC enable is happpen                                           */
@@ -12216,7 +12228,7 @@ typedef struct { /*!< (@ 0x24043800) AUX_ADC_DAC_COMP Structure                 
       __IOM uint32_t
         ADC_FIFO_FLUSH : 1; /*!< [2..2] This bit is used to flush the ADC FIFO                             */
       __IOM uint32_t ADC_FIFO_THRESHOLD : 3;       /*!< [5..3] These bits control the ADC FIFO threshold. When used
-                                                     by DMA, this will act as almost empty threshold. For TA,
+                                                     by DMA, this will act as almost empty threshold. For NWP,
                                                      it acts as almost full threshold.                                         */
       __IOM uint32_t ADC_MULTIPLE_CHAN_ACTIVE : 1; /*!< [6..6] This bit is used to control the auxadc sel signal going
                                                      to the Aux ADC.                                                           */
@@ -12316,13 +12328,13 @@ typedef struct { /*!< (@ 0x24043800) AUX_ADC_DAC_COMP Structure                 
         ADC_INPUT_DETECTION_THRESHOLD_2 : 8; /*!< [7..0] The value against which the ADC output has to be compared
                                                      is to be programmed  in this register.                                    */
       __IOM uint32_t COMP_LESS_THAN_EN : 1;  /*!< [8..8] When set, Aux ADC-DAC controller raises an interrupt
-                                                     to TA when the Aux ADC output  falls below the programmed
+                                                     to NWP when the Aux ADC output  falls below the programmed
                                                      Aux ADC detection threshold.                                              */
       __IOM uint32_t COMP_GRTR_THAN_EN : 1;  /*!< [9..9] When set, Aux ADC-DAC controller raises an interrupt
-                                                     to TA when the Aux ADC output is greater than the programmed
+                                                     to NWP when the Aux ADC output is greater than the programmed
                                                      Aux ADC detection threshold.                                              */
       __IOM uint32_t COMP_EQ_EN : 1;         /*!< [10..10] When set, Aux ADC-DAC controller raises an interrupt
-                                                     to TA when the  Aux ADC output is equal to the programmed
+                                                     to NWP when the  Aux ADC output is equal to the programmed
                                                      Aux ADC detection threshold.                                              */
       __IOM uint32_t
         ADC_DETECTION_THRESHOLD_2_UPPER_BITS : 2; /*!< [12..11] Upper 2 bits of ADC detection threshold 2          */
@@ -14037,7 +14049,7 @@ typedef struct { /*!< (@ 0x20220000) SDIOH Structure                            
 #define CT2              ((CT0_Type *)CT2_BASE)
 #define CT3              ((CT0_Type *)CT3_BASE)
 #define CT_MUX_REG       ((CT_MUX_REG_Type *)CT_MUX_REG_BASE)
-//#define ETHERNET         ((ETHERNET_Type *)ETHERNET_BASE)
+#define ETHERNET         ((ETHERNET_Type *)ETHERNET_BASE)
 #define ETH              ((ETH_Type *)ETHERNET_BASE)
 #define EGPIO            ((EGPIO_Type *)EGPIO_BASE)
 #define EGPIO1           ((EGPIO_Type *)EGPIO1_BASE)

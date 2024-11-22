@@ -1,32 +1,31 @@
-/*******************************************************************************
- * @file sl_si91x_driver_gpio.c
- * @brief General Purpose IO (GPIO) driver API.
- *******************************************************************************
- * # License
- * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
- *******************************************************************************
- *
- * SPDX-License-Identifier: Zlib
- *
- * The licenser of this software is Silicon Laboratories Inc.
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be miss represented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    miss represented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- ******************************************************************************/
+/******************************************************************************
+* @file sl_si91x_driver_gpio.c
+*******************************************************************************
+* # License
+* <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+*******************************************************************************
+*
+* SPDX-License-Identifier: Zlib
+*
+* The licensor of this software is Silicon Laboratories Inc.
+*
+* This software is provided 'as-is', without any express or implied
+* warranty. In no event will the authors be held liable for any damages
+* arising from the use of this software.
+*
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+*
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+*
+******************************************************************************/
 #include "sl_si91x_driver_gpio.h"
 #include <stdio.h>
 #include "sl_status.h"
@@ -102,7 +101,7 @@
 #define GPIO_PAD_SELECT_31     31 // GPIO PAD selection number 31
 #define GPIO_PAD_SELECT_32     32 // GPIO PAD selection number 32
 #define GPIO_PAD_SELECT_33     33 // GPIO PAD selection number 33
-#define OUTPUT_VALUE           1  // GPIO output value
+#define OUTPUT_VALUE           0  // GPIO output value
 /*******************************************************************************
  ********************************   ENUMS   ************************************
  ******************************************************************************/
@@ -198,14 +197,16 @@ sl_status_t sl_gpio_set_configuration(sl_si91x_gpio_pin_config_t pin_config)
     case SL_GPIO_PORT_B:
     case SL_GPIO_PORT_C:
     case SL_GPIO_PORT_D:
+      status = sl_gpio_validation(&pin_config.port_pin);
+      if (status != SL_STATUS_OK) {
+        return status;
+      }
       // Check if the GPIO pad is selected and it's not NO PAD.
       if (m4_gpio_pad[(pin_config.port_pin.port * MAX_GPIO_PORT_PIN) + pin_config.port_pin.pin]
           != GPIO_PAD_SELECT_NO_PAD) {
         // Check if the GPIO pad is selected and not PAD_SELECT_9.
         if (m4_gpio_pad[(pin_config.port_pin.port * MAX_GPIO_PORT_PIN) + pin_config.port_pin.pin] != PAD_SELECT_9) {
-          if ((pin_config.port_pin.pin >= HOST_PAD_MIN && pin_config.port_pin.pin <= HOST_PAD_MAX)
-              || ((pin_config.port_pin.port == SL_GPIO_PORT_B && pin_config.port_pin.pin >= GPIO_PIN_NUMBER9)
-                  && (pin_config.port_pin.port == SL_GPIO_PORT_B && pin_config.port_pin.pin <= GPIO_PIN_NUMBER14))) {
+          if (SL_GPIO_VALIDATE_HOST_PIN(pin_config.port_pin.port, pin_config.port_pin.pin)) {
             status = sl_si91x_gpio_driver_enable_host_pad_selection(
               m4_gpio_pad[(pin_config.port_pin.port * MAX_GPIO_PORT_PIN) + pin_config.port_pin.pin]);
             if (status != SL_STATUS_OK) {
@@ -783,7 +784,7 @@ sl_status_t sl_si91x_gpio_driver_enable_pad_selection(uint8_t gpio_padnum)
 sl_status_t sl_si91x_gpio_driver_enable_host_pad_selection(uint8_t gpio_num)
 {
   // Check if the GPIO pin number exceeds the maximum allowed value.
-  if (gpio_num >= HOST_PAD_MIN && gpio_num <= HOST_PAD_MAX) {
+  if (!(gpio_num >= HOST_PAD_MIN && gpio_num <= HOST_PAD_MAX)) {
     return SL_STATUS_INVALID_PARAMETER;
   }
   // Enable host pad selection for the GPIO pin.
@@ -1856,12 +1857,6 @@ void PIN_IRQ6_Handler(void)
  ******************************************************************************/
 void PIN_IRQ7_Handler(void)
 {
-// A temporary fix (delay of 46 micro seconds) to supress dual interrupts with rising edge.
-#ifdef SL_SI91x_DUAL_INTERRUPTS_ERRATA
-  for (int i = 0; i < 1000; i++)
-    __asm__("nop;");
-#endif // SL_SI91x_DUAL_INTERRUPTS_ERRATA
-
   sl_gpio_driver_clear_interrupts(PIN_INTR_7);
   gpio_callback_function_pointer[PIN_INTR_7](PIN_INTR_7);
 }
@@ -1909,7 +1904,9 @@ void UULP_PIN_IRQ_Handler(void)
     sl_si91x_gpio_driver_clear_uulp_interrupt(UULP_INTR_5);
     flag = PIN_INTR_4;
   }
-  gpio_uulp_pin_int_callback_fptr[flag](flag);
+  if (gpio_uulp_pin_int_callback_fptr[flag] != NULL) {
+    gpio_uulp_pin_int_callback_fptr[flag](flag);
+  }
 }
 
 /*******************************************************************************
@@ -1967,6 +1964,7 @@ void ULP_GROUP_IRQ_Handler(void)
     sl_si91x_gpio_driver_clear_ulp_group_interrupt(GROUP_INT_2);
     flag = GROUP_INT_2;
   }
+
   gpio_ulp_group_int_callback_fptr[flag](flag);
 }
 
