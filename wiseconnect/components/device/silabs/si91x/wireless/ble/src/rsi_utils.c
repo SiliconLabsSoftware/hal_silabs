@@ -1,27 +1,41 @@
 /*******************************************************************************
-* @file  rsi_utils.c
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
-
+ * @file  rsi_utils.c
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 /*
   Include files
  */
 
-#include <string.h>
-
 #include "rsi_common.h"
+#include <sl_string.h>
+
+#define MAX_MAC_ADDRESS_STRING_LENGTH  17
+#define MAX_IPV4_ADDRESS_STRING_LENGTH 15
+
 /*
   Global defines
  */
@@ -78,7 +92,7 @@ void rsi_uint32_to_4bytes(uint8_t *dBuf, uint32_t val)
  * @param[in]   dBuf - Pointer to a buffer to get the data from       
  * @return      Converted 16 bit data  
  */
-uint16_t rsi_bytes2R_to_uint16(uint8_t *dBuf)
+uint16_t rsi_bytes2R_to_uint16(const uint8_t *dBuf)
 {
   uint16_t val;
   if (rsi_driver_cb->endian == IS_LITTLE_ENDIAN) {
@@ -101,7 +115,7 @@ uint16_t rsi_bytes2R_to_uint16(uint8_t *dBuf)
  * @return       Converted 32 bit data
  */
 
-uint32_t rsi_bytes4R_to_uint32(uint8_t *dBuf)
+uint32_t rsi_bytes4R_to_uint32(const uint8_t *dBuf)
 {
   // the 32-bit value to return
   uint32_t val;
@@ -146,19 +160,19 @@ int8_t rsi_ascii_hex2num(int8_t ascii_hex_in)
 
   return RSI_SUCCESS;
 }
+
 /*=============================================================================*/
 /**
  * @fn          int8 rsi_char_hex2dec(int8_t *cBuf)
  * @brief       Convert given ASCII hex notation to decimal notation (used for mac address). 
- * @param[in]   cBuf - ASCII hex notation string 
+ * @param[in]   cBuf - ASCII hex notation string
  * @return      Integer Value
  */
-
 int8_t rsi_char_hex2dec(int8_t *cBuf)
 {
-  int8_t k = 0;
-  uint8_t i;
-  for (i = 0; i < strlen((char *)cBuf); i++) {
+  int8_t k       = 0;
+  size_t buf_len = sl_strlen((char *)cBuf);
+  for (uint8_t i = 0; i < buf_len; i++) {
     k = ((k * 16) + rsi_ascii_hex2num(cBuf[i]));
   }
   return k;
@@ -175,14 +189,14 @@ int8_t rsi_char_hex2dec(int8_t *cBuf)
 
 uint8_t *rsi_ascii_dev_address_to_6bytes_rev(uint8_t *hex_addr, int8_t *ascii_mac_address)
 {
-  uint8_t i;       // loop counter
   uint8_t cBufPos; // which char in the ASCII representation
   uint8_t byteNum; // which byte in the 32Bithex_address
   int8_t cBuf[6];  // temporary buffer
 
-  byteNum = 5;
-  cBufPos = 0;
-  for (i = 0; i < strlen((char *)ascii_mac_address); i++) {
+  byteNum        = 5;
+  cBufPos        = 0;
+  size_t buf_len = sl_strnlen((char *)ascii_mac_address, MAX_MAC_ADDRESS_STRING_LENGTH);
+  for (uint8_t i = 0; i < buf_len; i++) {
     // this will take care of the first 5 octets
     if (ascii_mac_address[i] == ':') {                                 // we are at the end of the address octet
       cBuf[cBufPos]       = 0;                                         // terminate the string
@@ -192,7 +206,7 @@ uint8_t *rsi_ascii_dev_address_to_6bytes_rev(uint8_t *hex_addr, int8_t *ascii_ma
       cBuf[cBufPos++] = ascii_mac_address[i];
     }
   }
-  // handle the last octet						// we are at the end of the string with no .
+  // handle the last octet            // we are at the end of the string with no .
   cBuf[cBufPos]     = 0x00;                                      // terminate the string
   hex_addr[byteNum] = (uint8_t)rsi_char_hex2dec((int8_t *)cBuf); // convert the strint to an integer
 
@@ -204,7 +218,7 @@ uint8_t *rsi_ascii_dev_address_to_6bytes_rev(uint8_t *hex_addr, int8_t *ascii_ma
  * @fn          int8_t hex_to_ascii(uint8_t hex_num)
  * @brief       Hex to ascii conversion.
  * @param[in]   hex_num - hex number
- * @return      Ascii value for given hex value	
+ * @return      Ascii value for given hex value
  */
 
 int8_t hex_to_ascii(uint8_t hex_num)
@@ -233,7 +247,6 @@ int8_t hex_to_ascii(uint8_t hex_num)
     case 0xf:
       ascii = (hex_num & 0x0F) - 10 + 'A';
       return ascii;
-      //	break;
     default:
       break;
   }
@@ -250,14 +263,12 @@ int8_t hex_to_ascii(uint8_t hex_num)
  * @return          Converted ASCII mac address 
  */
 
-uint8_t *rsi_6byte_dev_address_to_ascii(uint8_t *ascii_mac_address, uint8_t *hex_addr)
+uint8_t *rsi_6byte_dev_address_to_ascii(uint8_t *ascii_mac_address, const uint8_t *hex_addr)
 {
-  int8_t i;        // loop counter
   uint8_t cBufPos; // which char in the ASCII representation
 
-  //byteNum = 5;
   cBufPos = 0;
-  for (i = 5; i >= 0; i--) {
+  for (int8_t i = 5; i >= 0; i--) {
     ascii_mac_address[cBufPos++] = hex_to_ascii(hex_addr[i] >> 4);
     ascii_mac_address[cBufPos++] = hex_to_ascii(hex_addr[i]);
     if (i != 0) {
@@ -291,12 +302,11 @@ uint8_t convert_lower_case_to_upper_case(uint8_t lwrcase)
  * @return      void   
  */
 
-void string2array(uint8_t *dst, uint8_t *src, uint32_t length)
+void string2array(uint8_t *dst, const uint8_t *src, uint32_t length)
 {
-  uint32_t i = 0, j = 0;
-  for (i = 0, j = 0; i < (length * 2) && j < length; i += 2, j++)
+  for (uint32_t i = 0, j = 0; i < (length * 2) && j < length; i += 2, j++)
     if (src[i] && src[i + 1]) {
-      dst[j] = ((uint16_t)convert_lower_case_to_upper_case(src[i])) * 16;
+      dst[j] = (uint8_t)((convert_lower_case_to_upper_case(src[i])) * 16);
       dst[j] += convert_lower_case_to_upper_case(src[i + 1]);
     } else {
       dst[j] = 0;
@@ -313,7 +323,8 @@ void string2array(uint8_t *dst, uint8_t *src, uint32_t length)
 
 uint8_t *rsi_itoa(uint32_t val, uint8_t *str)
 {
-  int16_t ii = 0, jj = 0;
+  int16_t ii = 0;
+  int16_t jj = 0;
   uint8_t tmp[10];
   if (val == 0) {
     // if value is zero then handling
@@ -386,14 +397,14 @@ int8_t asciihex_2_num(int8_t ascii_hex_in)
 /**
  * @fn          int8_t rsi_charhex_2_dec(int8_t *cBuf)
  * @brief       Convert given ASCII hex notation to decimal notation (used for mac address). 
- * @param[in]   cBuf - ASCII hex notation string. 
+ * @param[in]   cBuf - ASCII hex notation string.
  * @return      value in integer  
  */
 int8_t rsi_charhex_2_dec(int8_t *cBuf)
 {
-  int8_t k = 0;
-  uint8_t i;
-  for (i = 0; i < strlen((char *)cBuf); i++) {
+  int8_t k       = 0;
+  size_t buf_len = sl_strlen((char *)cBuf);
+  for (uint8_t i = 0; i < buf_len; i++) {
     k = ((k * 16) + asciihex_2_num(cBuf[i]));
   }
   return k;
@@ -409,14 +420,14 @@ int8_t rsi_charhex_2_dec(int8_t *cBuf)
  */
 void rsi_ascii_mac_address_to_6bytes(uint8_t *hexAddr, int8_t *asciiMacAddress)
 {
-  uint8_t i;       // loop counter
   uint8_t cBufPos; // which char in the ASCII representation
   uint8_t byteNum; // which byte in the 32BitHexAddress
   int8_t cBuf[6];  // temporary buffer
 
-  byteNum = 0;
-  cBufPos = 0;
-  for (i = 0; i < strlen((char *)asciiMacAddress); i++) {
+  byteNum        = 0;
+  cBufPos        = 0;
+  size_t buf_len = sl_strnlen((char *)asciiMacAddress, MAX_MAC_ADDRESS_STRING_LENGTH);
+  for (uint8_t i = 0; i < buf_len; i++) {
     // this will take care of the first 5 octets
     if (asciiMacAddress[i] == ':') {                                   // we are at the end of the address octet
       cBuf[cBufPos]      = 0;                                          // terminate the string
@@ -441,8 +452,6 @@ void rsi_ascii_mac_address_to_6bytes(uint8_t *hexAddr, int8_t *asciiMacAddress)
  */
 void rsi_ascii_dot_address_to_4bytes(uint8_t *hexAddr, int8_t *asciiDotAddress)
 {
-  uint8_t i;
-  // loop counter
   uint8_t cBufPos;
   // which char in the ASCII representation
   uint8_t byteNum;
@@ -450,9 +459,10 @@ void rsi_ascii_dot_address_to_4bytes(uint8_t *hexAddr, int8_t *asciiDotAddress)
   int8_t cBuf[4];
   // character buffer
 
-  byteNum = 0;
-  cBufPos = 0;
-  for (i = 0; i < strlen((char *)asciiDotAddress); i++) {
+  byteNum        = 0;
+  cBufPos        = 0;
+  size_t buf_len = sl_strnlen((char *)asciiDotAddress, MAX_IPV4_ADDRESS_STRING_LENGTH);
+  for (uint8_t i = 0; i < buf_len; i++) {
     // this will take care of the first 3 octets
     if (asciiDotAddress[i] == '.') {
       // we are at the end of the address octet
@@ -480,17 +490,16 @@ void rsi_ascii_dot_address_to_4bytes(uint8_t *hexAddr, int8_t *asciiDotAddress)
  * @param[in]  ip - IP address to convert. 
  * @return     IP address in reverse Hex format 
  */
-uint64_t ip_to_reverse_hex(char *ip)
+uint64_t ip_to_reverse_hex(const char *ip)
 {
-  uint32_t ip1, ip2, ip3, ip4;
+  uint32_t ip1;
+  uint32_t ip2;
+  uint32_t ip3;
+  uint32_t ip4;
   uint64_t ip_hex;
   uint32_t status;
 
-  status = sscanf(ip, "%lu.%lu.%lu.%lu",
-                  (long unsigned int *)&ip1,
-                  (long unsigned int *)&ip2,
-                  (long unsigned int *)&ip3,
-                  (long unsigned int *)&ip4);
+  status = sscanf(ip, "%lu.%lu.%lu.%lu", &ip1, &ip2, &ip3, &ip4);
   if (status != 4) {
     return 0x00000000; // Problem if we actually pass 0.0.0.0
   }
@@ -512,7 +521,7 @@ uint64_t ip_to_reverse_hex(char *ip)
 // network to host long
 uint32_t rsi_ntohl(uint32_t a)
 {
-  return ((((a)&0xff000000) >> 24) | (((a)&0x00ff0000) >> 8) | (((a)&0x0000ff00) << 8) | (((a)&0x000000ff) << 24));
+  return (((a & 0xff000000) >> 24) | ((a & 0x00ff0000) >> 8) | ((a & 0x0000ff00) << 8) | ((a & 0x000000ff) << 24));
 }
 
 /** @} */

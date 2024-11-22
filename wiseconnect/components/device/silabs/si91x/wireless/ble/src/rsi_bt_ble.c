@@ -1,20 +1,32 @@
 /*******************************************************************************
-* @file  rsi_bt_ble.c
-* @brief
-*******************************************************************************
-* # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
-#include "rsi_bt_common_config.h"
+ * @file  rsi_bt_ble.c
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
+#include "ble_config.h"
 
 #include "rsi_common.h"
 #include "cmsis_os2.h"
@@ -22,22 +34,20 @@
 #include "sl_wifi_host_interface.h"
 #include "sl_si91x_driver.h"
 
-sl_status_t sl_si91x_allocate_command_buffer(sl_wifi_buffer_t **host_buffer,
-                                             void **buffer,
-                                             uint32_t requested_buffer_size,
-                                             uint32_t wait_duration_ms);
-uint32_t rsi_get_bt_state(rsi_bt_cb_t *bt_cb);
-/*
-  Include files
-  */
 #include "rsi_bt_common.h"
 #include "rsi_ble.h"
 #include "stdio.h"
 
+#include "sl_si91x_host_interface.h"
+
+sl_status_t sli_si91x_allocate_command_buffer(sl_wifi_buffer_t **host_buffer,
+                                              void **buffer,
+                                              uint32_t requested_buffer_size,
+                                              uint32_t wait_duration_ms);
+uint32_t rsi_get_bt_state(const rsi_bt_cb_t *bt_cb);
+
 #define BT_SEM     0x1
 #define BT_CMD_SEM 0x2
-
-#include "sl_si91x_host_interface.h"
 
 /*
  * Global Variables
@@ -46,10 +56,10 @@ uint32_t rsi_get_bt_state(rsi_bt_cb_t *bt_cb);
 // rsi_bt_ble.c function declarations
 void rsi_bt_common_register_callbacks(rsi_bt_get_ber_pkt_t rsi_bt_get_ber_pkt_from_app);
 uint32_t rsi_bt_get_timeout(uint16_t cmd_type, uint16_t protocol_type);
-uint32_t rsi_bt_get_status(rsi_bt_cb_t *bt_cb);
-void rsi_ble_update_le_dev_buf(rsi_ble_event_le_dev_buf_ind_t *rsi_ble_event_le_dev_buf_ind);
-void rsi_add_remote_ble_dev_info(rsi_ble_event_enhance_conn_status_t *remote_dev_info);
-void rsi_remove_remote_ble_dev_info(rsi_ble_event_disconnect_t *remote_dev_info);
+uint32_t rsi_bt_get_status(const rsi_bt_cb_t *bt_cb);
+void rsi_ble_update_le_dev_buf(const rsi_ble_event_le_dev_buf_ind_t *rsi_ble_event_le_dev_buf_ind);
+void rsi_add_remote_ble_dev_info(const rsi_ble_event_enhance_conn_status_t *remote_dev_info);
+void rsi_remove_remote_ble_dev_info(const rsi_ble_event_disconnect_t *remote_dev_info);
 int32_t rsi_driver_process_bt_resp(
   rsi_bt_cb_t *bt_cb,
   sl_si91x_packet_t *pkt,
@@ -96,8 +106,6 @@ uint16_t rsi_bt_get_proto_type(uint16_t rsp_type, rsi_bt_cb_t **bt_cb)
 {
   SL_PRINTF(SL_RSI_BT_GET_PROTO_TYPE_TRIGGER, BLUETOOTH, LOG_INFO, "RESPONSE_TYPE: %2x", rsp_type);
   uint16_t return_value = 0xFF;
-  //static uint16_t local_prototype;
-  //static rsi_bt_cb_t *local_cb;
 
   if (rsp_type == RSI_BLE_EVENT_DISCONNECT) {
     if (rsi_driver_cb->bt_common_cb->dev_type == RSI_BT_LE_DEVICE) {
@@ -106,7 +114,6 @@ uint16_t rsi_bt_get_proto_type(uint16_t rsp_type, rsi_bt_cb_t **bt_cb)
     }
 
     return return_value;
-    //}
   }
   /** @} */
   // Determine the protocol type by looking at the packet type
@@ -140,11 +147,6 @@ uint16_t rsi_bt_get_proto_type(uint16_t rsp_type, rsi_bt_cb_t **bt_cb)
     return_value = RSI_PROTO_BLE;
     *bt_cb       = rsi_driver_cb->ble_cb;
   }
-  /*if (return_value != RSI_PROTO_BT_COMMON)
-  {
-    local_prototype = return_value;
-    local_cb = *bt_cb;
-  }*/
 
   return return_value;
 }
@@ -181,15 +183,15 @@ uint32_t rsi_bt_get_timeout(uint16_t cmd_type, uint16_t protocol_type)
     case RSI_PROTO_BLE: {
       if (((cmd_type >= RSI_BLE_REQ_ADV) && (cmd_type <= RSI_BLE_SMP_PASSKEY))
           || ((cmd_type >= RSI_BLE_SET_ADVERTISE_DATA) && (cmd_type <= RSI_BLE_PER_RX_MODE))
-          || ((cmd_type == RSI_BLE_CONN_PARAM_RESP_CMD))
-          || ((cmd_type == RSI_BLE_MTU_EXCHANGE_REQUEST) || ((cmd_type == RSI_BLE_CMD_MTU_EXCHANGE_RESP)))) {
+          || (cmd_type == RSI_BLE_CONN_PARAM_RESP_CMD)
+          || ((cmd_type == RSI_BLE_MTU_EXCHANGE_REQUEST) || (cmd_type == RSI_BLE_CMD_MTU_EXCHANGE_RESP))) {
         return_value = RSI_BLE_GAP_CMD_RESP_WAIT_TIME;
       } else if (((cmd_type >= RSI_BLE_REQ_PROFILES) && (cmd_type <= RSI_BLE_CMD_INDICATE))
                  || ((cmd_type >= RSI_BLE_CMD_ATT_ERROR) && (cmd_type <= RSI_BLE_SET_SMP_PAIRING_CAPABILITY_DATA))
-                 || ((cmd_type == RSI_BLE_CMD_INDICATE_CONFIRMATION)) || (cmd_type == RSI_BLE_CMD_INDICATE_SYNC)) {
+                 || (cmd_type == RSI_BLE_CMD_INDICATE_CONFIRMATION) || (cmd_type == RSI_BLE_CMD_INDICATE_SYNC)) {
         return_value = RSI_BLE_GATT_CMD_RESP_WAIT_TIME;
       } else {
-        return_value = RSI_BT_BLE_CMD_MAX_RESP_WAIT_TIME; //RSI_WAIT_FOREVER;
+        return_value = RSI_BT_BLE_CMD_MAX_RESP_WAIT_TIME;
       }
     } break;
 
@@ -210,10 +212,10 @@ void rsi_bt_common_tx_done(sl_si91x_packet_t *pkt)
 {
 
   SL_PRINTF(SL_RSI_BT_COMMON_TX_DONE, BLUETOOTH, LOG_INFO);
-  uint8_t *host_desc    = NULL;
-  uint8_t protocol_type = 0;
-  uint16_t rsp_type     = 0;
-  rsi_bt_cb_t *bt_cb    = NULL;
+  const uint8_t *host_desc = NULL;
+  uint8_t protocol_type    = 0;
+  uint16_t rsp_type        = 0;
+  rsi_bt_cb_t *bt_cb       = NULL;
 
   // Get Host Descriptor
   host_desc = pkt->desc;
@@ -222,7 +224,7 @@ void rsi_bt_common_tx_done(sl_si91x_packet_t *pkt)
   rsp_type = rsi_bytes2R_to_uint16(host_desc + RSI_BT_RSP_TYPE_OFFSET);
 
   // Get the protocol Type
-  protocol_type = rsi_bt_get_proto_type(rsp_type, &bt_cb);
+  protocol_type = (uint8_t)rsi_bt_get_proto_type(rsp_type, &bt_cb);
 
   if (protocol_type == 0xFF) {
     return;
@@ -249,7 +251,7 @@ void rsi_bt_common_tx_done(sl_si91x_packet_t *pkt)
  *             Non-Zero Value - Failure
  */
 
-uint32_t rsi_get_bt_state(rsi_bt_cb_t *bt_cb)
+uint32_t rsi_get_bt_state(const rsi_bt_cb_t *bt_cb)
 {
   SL_PRINTF(SL_RSI_BT_STATE_TRIGGER, BLUETOOTH, LOG_INFO);
   return bt_cb->state;
@@ -278,7 +280,7 @@ void rsi_bt_set_status(rsi_bt_cb_t *bt_cb, int32_t status)
  * @return      0              - Success \n
  *              Non-Zero Value - Failure
  */
-uint32_t rsi_bt_get_status(rsi_bt_cb_t *bt_cb)
+uint32_t rsi_bt_get_status(const rsi_bt_cb_t *bt_cb)
 {
   return bt_cb->status;
 }
@@ -290,14 +292,13 @@ uint32_t rsi_bt_get_status(rsi_bt_cb_t *bt_cb)
  *
  */
 
-void rsi_ble_update_le_dev_buf(rsi_ble_event_le_dev_buf_ind_t *rsi_ble_event_le_dev_buf_ind)
+void rsi_ble_update_le_dev_buf(const rsi_ble_event_le_dev_buf_ind_t *rsi_ble_event_le_dev_buf_ind)
 {
 
   SL_PRINTF(SL_RSI_BT_UPDATE_LE_DEV_BUF_TRIGGER, BLUETOOTH, LOG_INFO);
-  uint8_t inx        = 0;
   rsi_bt_cb_t *le_cb = rsi_driver_cb->ble_cb;
 
-  for (inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
+  for (uint8_t inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
     if (!memcmp(rsi_ble_event_le_dev_buf_ind->remote_dev_bd_addr,
                 le_cb->remote_ble_info[inx].remote_dev_bd_addr,
                 RSI_DEV_ADDR_LEN)) {
@@ -322,14 +323,13 @@ void rsi_ble_update_le_dev_buf(rsi_ble_event_le_dev_buf_ind_t *rsi_ble_event_le_
  *
  */
 
-void rsi_add_remote_ble_dev_info(rsi_ble_event_enhance_conn_status_t *remote_dev_info)
+void rsi_add_remote_ble_dev_info(const rsi_ble_event_enhance_conn_status_t *remote_dev_info)
 {
 
   SL_PRINTF(SL_RSI_ADD_REMOTE_BLE_DEV_INFO_TRIGGER, BLUETOOTH, LOG_INFO);
-  uint8_t inx        = 0;
   rsi_bt_cb_t *le_cb = rsi_driver_cb->ble_cb;
 
-  for (inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
+  for (uint8_t inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
     if (!le_cb->remote_ble_info[inx].used) {
       memcpy(le_cb->remote_ble_info[inx].remote_dev_bd_addr, remote_dev_info->dev_addr, RSI_DEV_ADDR_LEN);
       le_cb->remote_ble_info[inx].used = 1;
@@ -351,14 +351,13 @@ void rsi_add_remote_ble_dev_info(rsi_ble_event_enhance_conn_status_t *remote_dev
  *
  */
 
-void rsi_remove_remote_ble_dev_info(rsi_ble_event_disconnect_t *remote_dev_info)
+void rsi_remove_remote_ble_dev_info(const rsi_ble_event_disconnect_t *remote_dev_info)
 {
 
   SL_PRINTF(SL_RSI_REMOVE_REMOTE_BLE_DEV_INFO_TRIGGER, BLUETOOTH, LOG_INFO);
-  uint8_t inx        = 0;
   rsi_bt_cb_t *le_cb = rsi_driver_cb->ble_cb;
 
-  for (inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
+  for (uint8_t inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
     if (!memcmp(remote_dev_info->dev_addr, le_cb->remote_ble_info[inx].remote_dev_bd_addr, RSI_DEV_ADDR_LEN)) {
       memset(le_cb->remote_ble_info[inx].remote_dev_bd_addr, 0, RSI_DEV_ADDR_LEN);
       le_cb->remote_ble_info[inx].used                 = 0;
@@ -396,9 +395,9 @@ int32_t rsi_driver_process_bt_resp(
   UNUSED_PARAMETER(protocol_type);
 
   SL_PRINTF(SL_RSI_DRIVER_PROCESS_BT_RESPONSE_TRIGGER, BLUETOOTH, LOG_INFO, "PROTOCOL_TYPE: %2x", protocol_type);
-  uint16_t rsp_type  = 0;
-  int16_t status     = RSI_SUCCESS;
-  uint8_t *host_desc = NULL;
+  uint16_t rsp_type        = 0;
+  int16_t status           = RSI_SUCCESS;
+  const uint8_t *host_desc = NULL;
   uint8_t *payload;
   uint16_t payload_length;
   uint16_t expected_resp = 0;
@@ -425,11 +424,12 @@ int32_t rsi_driver_process_bt_resp(
     if (bt_cb->expected_response_type == RSI_BT_EVENT_CARD_READY) {
       bt_cb->state = RSI_BT_STATE_OPERMODE_DONE;
     }
-    if (status == RSI_SUCCESS) { //To not allow BT SetAddress after these states are triggered
-      if (bt_cb->expected_response_type == RSI_BLE_REQ_ADV || bt_cb->expected_response_type == RSI_BLE_REQ_SCAN
-          || bt_cb->expected_response_type == RSI_BLE_REQ_CONN) {
-        rsi_driver_cb->bt_common_cb->state = RSI_BT_STATE_NONE;
-      }
+
+    //To not allow BT SetAddress after these states are triggered
+    if ((status == RSI_SUCCESS)
+        && (bt_cb->expected_response_type == RSI_BLE_REQ_ADV || bt_cb->expected_response_type == RSI_BLE_REQ_SCAN
+            || bt_cb->expected_response_type == RSI_BLE_REQ_CONN)) {
+      rsi_driver_cb->bt_common_cb->state = RSI_BT_STATE_NONE;
     }
     expected_resp = bt_cb->expected_response_type;
     // Clear expected response type
@@ -437,7 +437,6 @@ int32_t rsi_driver_process_bt_resp(
 
     // Copy the expected response to response structure/buffer, if any, passed in API
     if (bt_cb->expected_response_buffer != NULL) {
-      // If (payload_length <= RSI_BLE_GET_MAX_PAYLOAD_LENGTH(expected_response_type))
       memcpy(bt_cb->expected_response_buffer, payload, payload_length);
 
       // Save expected_response pointer to a local variable, since it is being cleared below
@@ -451,40 +450,34 @@ int32_t rsi_driver_process_bt_resp(
     if (bt_cb->sync_rsp) {
 
       /* handling this for the new buf configuration */
-      if (expected_resp == RSI_BLE_RSP_SET_WWO_RESP_NOTIFY_BUF_INFO) {
-        if (status == RSI_SUCCESS) {
-          rsi_ble_set_wo_resp_notify_buf_info_t *buf_info = (rsi_ble_set_wo_resp_notify_buf_info_t *)payload;
+      if ((expected_resp == RSI_BLE_RSP_SET_WWO_RESP_NOTIFY_BUF_INFO) && (status == RSI_SUCCESS)) {
+        const rsi_ble_set_wo_resp_notify_buf_info_t *buf_info = (rsi_ble_set_wo_resp_notify_buf_info_t *)payload;
 
-          bt_cb->remote_ble_info[bt_cb->remote_ble_index].mode = buf_info->buf_mode;
+        bt_cb->remote_ble_info[bt_cb->remote_ble_index].mode = buf_info->buf_mode;
 
-          if (buf_info->buf_mode == 0) /* small buf cnt */
-          {
-            bt_cb->remote_ble_info[bt_cb->remote_ble_index].max_buf_cnt   = (buf_info->buf_count * 10);
-            bt_cb->remote_ble_info[bt_cb->remote_ble_index].avail_buf_cnt = (buf_info->buf_count * 10);
-          } else /* big buf cnt */
-          {
-            bt_cb->remote_ble_info[bt_cb->remote_ble_index].max_buf_cnt   = buf_info->buf_count;
-            bt_cb->remote_ble_info[bt_cb->remote_ble_index].avail_buf_cnt = buf_info->buf_count;
-          }
-          bt_cb->remote_ble_index = 0; /* assigning value to 0 after successful response */
+        if (buf_info->buf_mode == 0) /* small buf cnt */
+        {
+          bt_cb->remote_ble_info[bt_cb->remote_ble_index].max_buf_cnt   = (buf_info->buf_count * 10);
+          bt_cb->remote_ble_info[bt_cb->remote_ble_index].avail_buf_cnt = (buf_info->buf_count * 10);
+        } else /* big buf cnt */
+        {
+          bt_cb->remote_ble_info[bt_cb->remote_ble_index].max_buf_cnt   = buf_info->buf_count;
+          bt_cb->remote_ble_info[bt_cb->remote_ble_index].avail_buf_cnt = buf_info->buf_count;
         }
+        bt_cb->remote_ble_index = 0; /* assigning value to 0 after successful response */
       }
       // Signal the bt semaphore
       osSemaphoreRelease(bt_cb->bt_sem);
-    } else {
-      if (rsi_bt_async_callback_handler != NULL) {
+    } else if (rsi_bt_async_callback_handler != NULL) {
 
-        bt_cb->async_status = status;
-        // Call callbacks handler
-        rsi_bt_async_callback_handler(bt_cb, rsp_type, payload, payload_length);
-      }
-    }
-  } else {
-    if (rsi_bt_async_callback_handler != NULL) {
       bt_cb->async_status = status;
       // Call callbacks handler
       rsi_bt_async_callback_handler(bt_cb, rsp_type, payload, payload_length);
     }
+  } else if (rsi_bt_async_callback_handler != NULL) {
+    bt_cb->async_status = status;
+    // Call callbacks handler
+    rsi_bt_async_callback_handler(bt_cb, rsp_type, payload, payload_length);
   }
 
   return status;
@@ -501,21 +494,19 @@ uint16_t rsi_driver_process_bt_resp_handler(void *rx_pkt)
 {
 
   SL_PRINTF(SL_RSI_DRIVER_PROCESS_BT_RESP_HANDLER_TRIGGER, BLUETOOTH, LOG_INFO);
-  sl_si91x_packet_t *pkt = (sl_si91x_packet_t *)rx_pkt;
-  uint8_t *host_desc     = NULL;
-  uint8_t protocol_type  = 0;
-  uint16_t rsp_type      = 0;
-  // uint16_t rsp_len = 0;
-  int16_t status                        = RSI_SUCCESS;
-  rsi_bt_cb_t *bt_cb                    = NULL;
-  rsi_ble_event_disconnect_t *temp_data = NULL;
+  sl_si91x_packet_t *pkt                      = (sl_si91x_packet_t *)rx_pkt;
+  const uint8_t *host_desc                    = NULL;
+  uint8_t protocol_type                       = 0;
+  uint16_t rsp_type                           = 0;
+  int16_t status                              = RSI_SUCCESS;
+  rsi_bt_cb_t *bt_cb                          = NULL;
+  const rsi_ble_event_disconnect_t *temp_data = NULL;
 
   // Get Host Descriptor
   host_desc = pkt->desc;
 
   // Get Command response Type
   rsp_type = rsi_bytes2R_to_uint16(host_desc + RSI_BT_RSP_TYPE_OFFSET);
-  //rsp_len = rsi_bytes2R_to_uint16(host_desc + RSI_BT_RSP_LEN_OFFSET) & RSI_BT_RSP_LEN_MASK;
 
   if (rsp_type == RSI_BLE_EVENT_DISCONNECT) {
 
@@ -526,7 +517,7 @@ uint16_t rsi_driver_process_bt_resp_handler(void *rx_pkt)
   }
 
   // Get the protocol Type
-  protocol_type = rsi_bt_get_proto_type(rsp_type, &bt_cb);
+  protocol_type = (uint8_t)rsi_bt_get_proto_type(rsp_type, &bt_cb);
 
   SL_PRINTF(SL_RSI_BT_DRIVER_PROCESS_BT_RESP_HANDLER_TRIGGER, BLUETOOTH, LOG_INFO, "PROTOCOL_TYPE: %1x", protocol_type);
   if (protocol_type == 0xFF) {
@@ -535,10 +526,10 @@ uint16_t rsi_driver_process_bt_resp_handler(void *rx_pkt)
   // Call the corresponding protocol process rsp handler
   if (protocol_type == RSI_PROTO_BT_COMMON) {
     // Call BT common process rsp handler
-    status = rsi_driver_process_bt_resp(bt_cb, pkt, NULL, protocol_type);
+    status = (int16_t)rsi_driver_process_bt_resp(bt_cb, pkt, NULL, protocol_type);
   } else {
     // Call BLE process response handler
-    status = rsi_driver_process_bt_resp(bt_cb, pkt, rsi_ble_callbacks_handler, protocol_type);
+    status = (int16_t)rsi_driver_process_bt_resp(bt_cb, pkt, rsi_ble_callbacks_handler, protocol_type);
   }
   return status;
 }
@@ -1005,15 +996,15 @@ void rsi_ble_callbacks_handler(rsi_bt_cb_t *ble_cb, uint16_t rsp_type, uint8_t *
   // This statement is added only to resolve compilation warning, value is unchanged
   UNUSED_PARAMETER(payload_length);
   // Get ble cb struct pointer
-  rsi_ble_cb_t *ble_specific_cb = ble_cb->bt_global_cb->ble_specific_cb;
-  uint16_t status               = 0;
-  uint16_t sync_status          = 0;
-  uint8_t le_cmd_inuse_check    = 0;
+  const rsi_ble_cb_t *ble_specific_cb = ble_cb->bt_global_cb->ble_specific_cb;
+  uint16_t status                     = 0;
+  uint16_t sync_status                = 0;
+  uint8_t le_cmd_inuse_check          = 0;
 
   // updating the response status;
-  status = ble_cb->async_status;
+  status = (uint16_t)ble_cb->async_status;
 
-  sync_status = rsi_bt_get_status(ble_cb);
+  sync_status = (uint16_t)rsi_bt_get_status(ble_cb);
 
   SL_PRINTF(SL_RSI_BLE_CALLBACKS_HANDLER_STATUS, BLE, LOG_INFO, "STATUS: %2x", status);
 
@@ -1029,7 +1020,6 @@ void rsi_ble_callbacks_handler(rsi_bt_cb_t *ble_cb, uint16_t rsp_type, uint8_t *
         ((rsi_ble_event_conn_status_t *)payload)->status = status;
         ble_specific_cb->ble_on_conn_status_event((rsi_ble_event_conn_status_t *)payload);
       }
-      // rsi_bt_set_status(ble_cb, RSI_BLE_STATE_CONNECTION);
       rsi_add_remote_ble_dev_info((rsi_ble_event_enhance_conn_status_t *)payload);
     } break;
 
@@ -1038,7 +1028,6 @@ void rsi_ble_callbacks_handler(rsi_bt_cb_t *ble_cb, uint16_t rsp_type, uint8_t *
         ((rsi_ble_event_enhance_conn_status_t *)payload)->status = status;
         ble_specific_cb->ble_on_enhance_conn_status_event((rsi_ble_event_enhance_conn_status_t *)payload);
       }
-      // rsi_bt_set_status(ble_cb, RSI_BLE_STATE_CONNECTION);
       rsi_add_remote_ble_dev_info((rsi_ble_event_enhance_conn_status_t *)payload);
     } break;
 
@@ -1046,7 +1035,6 @@ void rsi_ble_callbacks_handler(rsi_bt_cb_t *ble_cb, uint16_t rsp_type, uint8_t *
       if (ble_specific_cb->ble_on_disconnect_event != NULL) {
         ble_specific_cb->ble_on_disconnect_event((rsi_ble_event_disconnect_t *)payload, status);
       }
-      // rsi_bt_set_status(ble_cb, RSI_BLE_STATE_DSICONNECT);
       rsi_remove_remote_ble_dev_info((rsi_ble_event_disconnect_t *)payload);
     } break;
     case RSI_BLE_EVENT_GATT_ERROR_RESPONSE: {
@@ -1383,21 +1371,19 @@ void rsi_ble_callbacks_handler(rsi_bt_cb_t *ble_cb, uint16_t rsp_type, uint8_t *
         ble_specific_cb->ble_on_rcp_resp_rcvd_event(status, (rsi_ble_event_rcp_rcvd_info_t *)payload);
       }
     }
-    default: {
-    }
+    default:
+      break;
   }
 
   if (le_cmd_inuse_check) {
-    uint8_t inx                 = 0;
-    uint8_t *remote_dev_bd_addr = (uint8_t *)payload;
-    for (inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
+    const uint8_t *remote_dev_bd_addr = payload;
+    for (uint8_t inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
       if (!memcmp(ble_cb->remote_ble_info[inx].remote_dev_bd_addr, remote_dev_bd_addr, RSI_DEV_ADDR_LEN)) {
-        if (ble_cb->remote_ble_info[inx].cmd_in_use) {
-          if ((rsp_type == RSI_BLE_EVENT_GATT_ERROR_RESPONSE)
-              || (rsp_type == ble_cb->remote_ble_info[inx].expected_resp)) {
-            ble_cb->remote_ble_info[inx].cmd_in_use    = 0;
-            ble_cb->remote_ble_info[inx].expected_resp = 0;
-          }
+        if ((ble_cb->remote_ble_info[inx].cmd_in_use)
+            && ((rsp_type == RSI_BLE_EVENT_GATT_ERROR_RESPONSE)
+                || (rsp_type == ble_cb->remote_ble_info[inx].expected_resp))) {
+          ble_cb->remote_ble_info[inx].cmd_in_use    = 0;
+          ble_cb->remote_ble_info[inx].expected_resp = 0;
         }
         break;
       }
@@ -1501,14 +1487,14 @@ uint16_t rsi_bt_prepare_common_pkt(uint16_t cmd_type, void *cmd_struct, sl_si91x
           payload_size = sizeof(rsi_ble_per_receive_t);
           memcpy(pkt->data, cmd_struct, payload_size);
           break;
-        default: {
-        }
+        default:
+          return RSI_ERROR_INVALID_PARAM;
       }
     } break;
     case RSI_BT_VENDOR_SPECIFIC: {
       pkt->data[0] = ((uint8_t *)cmd_struct)[0];
       pkt->data[1] = ((uint8_t *)cmd_struct)[1];
-      switch ((pkt->data[0] | (pkt->data[1] << 8))) {
+      switch (pkt->data[0] | (pkt->data[1] << 8)) {
         case BLE_VENDOR_RF_TYPE_CMD_OPCODE:
           payload_size = sizeof(rsi_ble_vendor_rf_type_t);
           memcpy(pkt->data, cmd_struct, payload_size);
@@ -2030,9 +2016,8 @@ uint16_t rsi_bt_prepare_le_pkt(uint16_t cmd_type, void *cmd_struct, sl_si91x_pac
   }
 
   if (le_buf_check || le_cmd_inuse_check || le_buf_in_use_check) {
-    uint8_t inx                 = 0;
     uint8_t *remote_dev_bd_addr = (uint8_t *)cmd_struct;
-    for (inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
+    for (uint8_t inx = 0; inx < (RSI_BLE_MAX_NBR_PERIPHERALS + RSI_BLE_MAX_NBR_CENTRALS); inx++) {
       if (!memcmp(le_cb->remote_ble_info[inx].remote_dev_bd_addr, remote_dev_bd_addr, RSI_DEV_ADDR_LEN)) {
 
         /* ERROR PRONE : Do not changes if else checks order */
@@ -2157,10 +2142,10 @@ int32_t rsi_bt_driver_send_cmd(uint16_t cmd, void *cmd_struct, void *resp)
   }
 
   // Allocate command buffer from ble pool
-  status = sl_si91x_allocate_command_buffer(&buffer,
-                                            (void **)&pkt,
-                                            sizeof(sl_si91x_packet_t) + RSI_BT_COMMON_CMD_LEN,
-                                            calculate_timeout_ms);
+  status = sli_si91x_allocate_command_buffer(&buffer,
+                                             (void **)&pkt,
+                                             sizeof(sl_si91x_packet_t) + RSI_BT_COMMON_CMD_LEN,
+                                             calculate_timeout_ms);
   // If allocation of packet fails
   if (pkt == NULL) {
     osSemaphoreRelease(bt_cb->bt_cmd_sem);
@@ -2238,7 +2223,7 @@ int32_t rsi_bt_driver_send_cmd(uint16_t cmd, void *cmd_struct, void *resp)
     bt_cb->sync_rsp               = 1;
   }
 
-  sl_si91x_driver_send_bt_command(cmd, SI91X_BT_CMD_QUEUE, buffer, bt_cb->sync_rsp);
+  sl_si91x_driver_send_bt_command(cmd, SI91X_BT_CMD, buffer, bt_cb->sync_rsp);
 
   if (bt_cb->bt_sem == NULL || (osSemaphoreAcquire(bt_cb->bt_sem, calculate_timeout_ms) != osOK)) {
     rsi_bt_set_status(bt_cb, RSI_ERROR_RESPONSE_TIMEOUT);

@@ -1,19 +1,31 @@
 /*******************************************************************************
-* @file  rsi_common_apis.c
-* @brief
-*******************************************************************************
-* # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ * @file  rsi_common_apis.c
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 #include "rsi_common.h"
 
@@ -68,14 +80,12 @@ int32_t rsi_ble_driver_init(uint8_t *buffer, uint32_t length)
 {
   uint32_t actual_length = 0;
 
-  // If (((uint32_t)buffer & 3) != 0)
   if (((uintptr_t)buffer & 3) != 0) // To avoid compiler warning, replace uint32_t with uintptr_t
   {
     // Making buffer 4 byte aligned
     // Length -= (4 - ((uint32_t)buffer & 3));
     // To avoid compiler warning, replace uint32_t with uintptr_t
     length -= (4 - ((uintptr_t)buffer & 3));
-    // Buffer = (uint8_t *)(((uint32_t)buffer + 3) & ~3);// To avoid compiler warning, replace uint32_t with uintptr_t
     buffer = (uint8_t *)(((uintptr_t)buffer + 3) & ~3);
   }
 
@@ -115,7 +125,7 @@ int32_t rsi_ble_driver_init(uint8_t *buffer, uint32_t length)
   // Initialize bt_common_cb
   rsi_bt_cb_init(rsi_driver_cb->bt_common_cb, RSI_PROTO_BT_COMMON);
 
-  // Save the expected response type for BLE card ready event from TA
+  // Save the expected response type for BLE card ready event from NWP
   rsi_driver_cb->bt_common_cb->expected_response_type = RSI_BT_EVENT_CARD_READY;
   rsi_driver_cb->bt_common_cb->sync_rsp               = 1;
 
@@ -161,14 +171,12 @@ int32_t rsi_ble_driver_init(uint8_t *buffer, uint32_t length)
 int32_t rsi_ble_driver_deinit(void)
 {
   SL_PRINTF(SL_DRIVER_DEINIT_ENTRY, COMMON, LOG_INFO);
-  uint32_t actual_length = 0;
 
-  if ((rsi_driver_cb->device_state < RSI_DRIVER_INIT_DONE)) {
+  if (rsi_driver_cb->device_state < RSI_DRIVER_INIT_DONE) {
     // Command given in wrong state
     return RSI_ERROR_COMMAND_GIVEN_IN_WRONG_STATE;
   }
   // Check if buffer is enough for driver components
-  actual_length += rsi_driver_memory_estimate();
   if (buffer_addr == NULL) {
     return RSI_FAILURE;
   }
