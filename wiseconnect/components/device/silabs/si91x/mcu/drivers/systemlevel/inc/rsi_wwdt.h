@@ -1,19 +1,31 @@
 /*******************************************************************************
 * @file  rsi_wwdt.h
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 /**
  * Includes
@@ -137,11 +149,11 @@ STATIC INLINE void RSI_WWDT_SysRstOnProcLockDisable(MCU_WDT_Type *pstcWDT)
 }
 
 /**
- * @fn           void RSI_WWDT_GetProcLockSignal(MCU_WDT_Type *pstcWDT)
+ * @fn           void RSI_WWDT_GetProcLockSignal(const MCU_WDT_Type *pstcWDT)
  * @brief        This API is used to read signal for processor stuck reset enable
  * @return       None
  */
-STATIC INLINE uint8_t RSI_WWDT_GetProcLockRstEnableSignal(MCU_WDT_Type *pstcWDT)
+STATIC INLINE uint8_t RSI_WWDT_GetProcLockRstEnableSignal(const MCU_WDT_Type *pstcWDT)
 {
   if (pstcWDT->MCU_WWD_ARM_STUCK_EN_b.PROCESSOR_STUCK_RESET_EN_) {
     return 1;
@@ -151,12 +163,12 @@ STATIC INLINE uint8_t RSI_WWDT_GetProcLockRstEnableSignal(MCU_WDT_Type *pstcWDT)
 }
 
 /**
- * @fn         uint16_t RSI_WWDT_GetIntrTime(MCU_WDT_Type *pstcWDT)
+ * @fn         uint16_t RSI_WWDT_GetIntrTime(const MCU_WDT_Type *pstcWDT)
  * @brief      This API is used to read the interrupt time of the watch dog timer
  * @param[in]  pstcWDT          : pointer to the WDT register instance
  * @return     uint8_t  : interrupt timer value
  */
-STATIC INLINE uint8_t RSI_WWDT_GetIntrTime(MCU_WDT_Type *pstcWDT)
+STATIC INLINE uint8_t RSI_WWDT_GetIntrTime(const MCU_WDT_Type *pstcWDT)
 {
   uint8_t interrupt_time;
   interrupt_time = pstcWDT->MCU_WWD_INTERRUPT_TIMER_b.WWD_INTERRUPT_TIMER;
@@ -164,12 +176,12 @@ STATIC INLINE uint8_t RSI_WWDT_GetIntrTime(MCU_WDT_Type *pstcWDT)
 }
 
 /**
- * @fn         uint16_t RSI_WWDT_GetSysRstTime(MCU_WDT_Type *pstcWDT)
+ * @fn         uint16_t RSI_WWDT_GetSysRstTime(const MCU_WDT_Type *pstcWDT)
  * @brief      This API is used to read the system reset time of the watch dog timer
  * @param[in]  pstcWDT          : pointer to the WDT register instance
  * @return     uint8_t  : system reset timer value
  */
-STATIC INLINE uint8_t RSI_WWDT_GetSysRstTime(MCU_WDT_Type *pstcWDT)
+STATIC INLINE uint8_t RSI_WWDT_GetSysRstTime(const MCU_WDT_Type *pstcWDT)
 {
   uint8_t system_reset_time;
   system_reset_time = pstcWDT->MCU_WWD_SYSTEM_RESET_TIMER_b.WWD_SYSTEM_RESET_TIMER;
@@ -177,12 +189,12 @@ STATIC INLINE uint8_t RSI_WWDT_GetSysRstTime(MCU_WDT_Type *pstcWDT)
 }
 
 /**
- * @fn         uint8_t RSI_WWDT_GetWindowTime(MCU_WDT_Type *pstcWDT)
+ * @fn         uint8_t RSI_WWDT_GetWindowTime(const MCU_WDT_Type *pstcWDT)
  * @brief      This API is used to read the system reset time of the watch dog timer
  * @param[in]  pstcWDT          : pointer to the WDT register instance
  * @return     uint8_t  : system reset timer value
  */
-STATIC INLINE uint8_t RSI_WWDT_GetWindowTime(MCU_WDT_Type *pstcWDT)
+STATIC INLINE uint8_t RSI_WWDT_GetWindowTime(const MCU_WDT_Type *pstcWDT)
 {
   uint8_t window_time;
   window_time = pstcWDT->MCU_WWD_WINDOW_TIMER_b.WINDOW_TIMER;

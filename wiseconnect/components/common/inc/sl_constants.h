@@ -1,10 +1,31 @@
-/*
- * EVALUATION AND USE OF THIS SOFTWARE IS SUBJECT TO THE TERMS AND
- * CONDITIONS OF THE CONTROLLING LICENSE AGREEMENT FOUND AT LICENSE.md
- * IN THIS SDK. IF YOU DO NOT AGREE TO THE LICENSE TERMS AND CONDITIONS,
- * PLEASE RETURN ALL SOURCE FILES TO SILICON LABORATORIES.
- * (c) Copyright 2018, Silicon Laboratories Inc.  All rights reserved.
- */
+/***************************************************************************/ /**
+ * @file  sl_constants.h
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 #pragma once
 
@@ -18,9 +39,9 @@
 #define SL_STATUS_SHARED_ENUM(prefix, name) prefix##_##name = (SL_##name)
 
 #ifdef __CC_ARM
-#define BREAKPOINT() __asm__("bkpt #0");
+#define BREAKPOINT() __asm__("bkpt #0")
 #else
-#define BREAKPOINT() __asm__("bkpt");
+#define BREAKPOINT() __asm__("bkpt")
 #endif
 
 #define SL_IPV4_ADDRESS_LENGTH 4
@@ -37,14 +58,22 @@
 
 #ifndef FUZZING
 #define SL_ASSERT(condition, ...) \
-  if (!(condition)) {             \
-    BREAKPOINT();                 \
-  }
+  do {                            \
+    if (!(condition)) {           \
+      BREAKPOINT();               \
+    }                             \
+  } while (0)
 #else
 #define SL_ASSERT(condition, ...) \
-  if (!(condition)) {             \
-  }
+  do {                            \
+    if (!(condition)) {           \
+    }                             \
+  } while (0)
 #endif
+
+#ifndef ROUND_UP
+#define ROUND_UP(x, y) ((x) % (y) ? (x) + (y) - ((x) % (y)) : (x))
+#endif /* ifndef ROUND_UP */
 
 #define SL_WAIT_FOREVER    0xFFFFFFFF
 #define SL_INVALID_POINTER ((void *)0xEFFFFFFF) // This can point to any location that will trigger an exception
@@ -58,7 +87,7 @@
 // Defines for error logging
 #define PRINT_ERROR_LOGS 0
 
-#define PRINT_STATUS(tag, status) printf("\r\n%s %s:%d: 0x%lu \r\n", tag, __FILE__, __LINE__, (unsigned long)status);
+#define PRINT_STATUS(tag, status) printf("\r\n%s %s:%d: 0x%lu \r\n", tag, __FILE__, __LINE__, status);
 
 #define SL_CHECK_STATUS(x)    \
   do {                        \
@@ -156,8 +185,7 @@
     }                                              \
   } while (0)
 
-#define PRINT_ERROR_STATUS(tag, status) \
-  printf("\r\n%s %s:%d: 0x%x \r\n", tag, __FILE__, __LINE__, (unsigned int)status);
+#define PRINT_ERROR_STATUS(tag, status) printf("\r\n%s %s:%d: 0x%x \r\n", tag, __FILE__, __LINE__, (unsigned int)status)
 
 #ifdef PRINT_DEBUG_LOG
 extern void sl_debug_log(const char *format, ...);

@@ -33,7 +33,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <sys/socket.h>
+#include "socket.h"
 #include "sl_status.h"
 #include "sl_si91x_protocol_types.h"
 
@@ -41,77 +41,45 @@
  * @addtogroup SI91X_SOCKET_FUNCTIONS
  * @{ 
  */
-/// SiWx91x Socket information query
+/**
+ * @brief Structure for query SiWx91x socket information.
+ *
+ * @details
+ * The structure queries the information about a specific socket, in the SiWx91x series.
+ * It includes details such as:socket identifier, type, source and destination ports,
+ * and the IP address of the remote host. The IP address can be either IPv4 or IPv6,
+ * determined by the context structure which is used.
+ */
 typedef struct {
-  uint8_t sock_id[2]; ///< Identifier for the socket.
+  uint8_t sock_id[2]; ///< Socket Identifier.
 
-  uint8_t sock_type[2]; ///< Type of the socket (TCP, UDP, etc.).
+  uint8_t sock_type[2]; ///< Socket type (for example,TCP, and UDP).
 
-  uint8_t source_port[2]; ///< Port number used by the source.
+  uint8_t source_port[2]; ///< Source port number used by the socket.
 
-  uint8_t dest_port[2]; ///< Port number used by the destination.
+  uint8_t dest_port[2]; ///< Destination port number used by the socket.
 
   union {
     uint8_t ipv4_address[4]; ///< IPv4 address of the remote host.
 
     uint8_t ipv6_address[16]; ///< IPv6 address of the remote host.
-
-  } dest_ip_address; ///< IP address of the destination host.
+  } dest_ip_address;          ///< IP address of the destination host.
 } sl_si91x_sock_info_query_t;
 
-/// SiWx91x socket information response
+/**
+ * @brief Structure for SiWx91x socket information response.
+ *
+ * @details
+ * The structure holds the response information for a query about the currently opened sockets
+ * in the SiWx91x series. It includes the total number of opened sockets and an array containing
+ * detailed information about each socket.
+ */
 typedef struct {
-
   uint16_t number_of_opened_sockets; ///< Total number of currently opened sockets.
 
-  sl_si91x_sock_info_query_t socket_info
-    [SL_SI91X_SOCKET_INFO_RESPONSE_SOCKETS_COUNT]; ///< Array containing information about each opened socket.
-
+  sl_si91x_sock_info_query_t
+    socket_info[SL_SI91X_SOCKET_INFO_RESPONSE_SOCKETS_COUNT]; ///< Array contains information about each open socket.
 } sl_si91x_socket_info_response_t;
-
-/**
- * @brief     Set SiWx91X specific socket options.
- * @param[in]  socket_id      
- * Identifier for the socket.
- * @param[in]  option_level   
- * Level at which the option is defined. One of the values from @ref BSD_SOCKET_OPTION_LEVEL.
- * @param[in]  option_name    
- * Name of the option to be set. Currently, ONLY @ref SO_CERT_INDEX, @ref SO_HIGH_PERFORMANCE_SOCKET, @ref SO_TLS_SNI are supported.
- * @param[in]  option_value   
- * Pointer to the value for the option.
- * @param[in]  option_length  
- * Length of the option value.
- * @return     
- * Returns 0 on success or -1 on error (in which case, errno is set appropriately).
- *
- */
-int sl_si91x_set_custom_sync_sockopt(int socket_id,
-                                     int option_level,
-                                     int option_name,
-                                     const void *option_value,
-                                     socklen_t option_length);
-
-/**
- * @brief      Get SiWx91X specific socket options
- * @param[in]  socket_id      
- * Identifier for the socket.
- * @param[in]  option_level   
- * Level at which the option is defined. One of the values from @ref BSD_SOCKET_OPTION_LEVEL.
- * @param[in]  option_name    
- * Name of the option to be retrieved. Currently, ONLY @ref SO_CERT_INDEX is supported.
- * @param[in]  option_value   
- * Pointer to the value for the option.
- * @param[in]  option_length  
- * Pointer to the size of the option value.
- * @return     
- * Returns 0 on success, or -1 on error (in which case, errno is set appropriately).
- *
- */
-int sl_si91x_get_custom_sync_sockopt(int socket_id,
-                                     int option_level,
-                                     int option_name,
-                                     void *option_value,
-                                     socklen_t *option_length);
 
 /**
  * @brief

@@ -1,17 +1,29 @@
-/*******************************************************************************
+/******************************************************************************
 * @file  system_si91x.h
-* @brief 
 *******************************************************************************
 * # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
+* <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
 *******************************************************************************
 *
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
+* SPDX-License-Identifier: Zlib
+*
+* The licensor of this software is Silicon Laboratories Inc.
+*
+* This software is provided 'as-is', without any express or implied
+* warranty. In no event will the authors be held liable for any damages
+* arising from the use of this software.
+*
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+*
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
 *
 ******************************************************************************/
 
@@ -39,9 +51,9 @@ extern uint32_t package_type;
 void RSI_PS_ConfigureTaMemories(void);
 /*WiSeAOC specific VTOR values*/
 #if defined(WISE_AOC_MODE)
-#define VECTOR_OFF_SET_TA_ROM        (0x100000 + 0x70100) /*<! M4 execution from TA ROM                  */
+#define VECTOR_OFF_SET_TA_ROM        (0x100000 + 0x70100) /*<! M4 execution from NWP ROM                  */
 #define VECTOR_OFF_SET_M4_ROM        (0x300000 + 0xB100)  /*<! M4 execution from M4 ROM                  */
-#define VECTOR_OFF_SET_TA_ROM_DIRECT (0x80000 + 0x70100)  /*<! M4 execution from TA ROM in directed mode */
+#define VECTOR_OFF_SET_TA_ROM_DIRECT (0x80000 + 0x70100)  /*<! M4 execution from NWP ROM in directed mode */
 #endif                                                    //WISE_AOC_MODE
 
 typedef enum SLEEP_TYPE {
@@ -56,24 +68,27 @@ typedef enum SLEEP_TYPE {
 #define HF_MHZ_RO                 3
 #define BG_SLEEP_TIMER_REG_OFFSET 0x125
 /*System default clocks*/
-#define DEFAULT_SOC_PLL_CLOCK    80000000
-#define DEFAULT_INTF_PLL_CLOCK   80000000
+#define DEFAULT_SOC_PLL_CLOCK    0
+#define DEFAULT_INTF_PLL_CLOCK   0
 #define DEFAULT_MODEM_PLL_CLOCK  80000000
-#define DEFAULT_32MHZ_RC_CLOCK   32000000
+#define DEFAULT_MHZ_RC_CLOCK     32000000 /* Not recommended to use for applicatios */
 #define DEFAULT_20MHZ_RO_CLOCK   20000000
 #define DEFAULT_DOUBLER_CLOCK    (2 * DEFAULT_20MHZ_RO_CLOCK)
 #define DEFAULT_32KHZ_RC_CLOCK   32000
 #define DEFAULT_32KHZ_RO_CLOCK   32000
 #define DEFAULT_32KHZ_XTAL_CLOCK 32768
-#define DEFAULT_RF_REF_CLOCK     40000000
+#define DEFAULT_40MHZ_CLOCK      40000000
 #define DEFAULT_MEMS_REF_CLOCK   40000000
 #define DEFAULT_BYP_RC_CLOCK     32000000
-#define DEFAULT_I2S_PLL_CLOCK    6144000
+#define DEFAULT_I2S_PLL_CLOCK    0
 #define DEFAULT_REF_CLOCK        2
 
 /* Selecting the PLL reference clock */
-/* 0 - XTAL_CLK, 1 - Reserved, 2 - RC_32MHZ_CLK, 3 - Reserved */
+/* 0 - XTAL_CLK, 1 - Reserved, 2 - Reserved, 3 - Reserved */
 #define PLL_REF_CLK_CONFIG_REG (*(volatile uint32_t *)(0x46180000UL + 0x00008000 + 0x04))
+#define SELECT_RC_MHZ_CLOCK    BIT(15)
+#define SELECT_XTAL_MHZ_CLOCK  ~(BIT(14) | BIT(15))
+#define XTAL_CLK_FREQ          40000000UL
 
 #define M4SS_P2P_INT_BASE_ADDRESS 0x46008000
 #ifdef SLI_SI91X_MCU_COMMON_FLASH_MODE
@@ -86,7 +101,7 @@ typedef enum SLEEP_TYPE {
 #define M4SS_P2P_INTR_CLR_REG      *(volatile uint32_t *)(M4SS_P2P_INT_BASE_ADDRESS + 0x170)
 #define M4SS_REF_CLK_MUX_CTRL      BIT(24)
 #define TASS_REF_CLK_MUX_CTRL      BIT(25)
-#ifdef SLI_SI917B0
+#if defined(SLI_SI917) || defined(SLI_SI915)
 #define MCU_TASS_REF_CLK_SEL_MUX_CTRL BIT(8)
 #endif
 #define M4SS_CTRL_TASS_AON_PWR_DMN_RST_BYPASS_BIT BIT(2)
@@ -112,7 +127,7 @@ typedef enum SLEEP_TYPE {
 #define PACKAGE_TYPE_WMCU (*(volatile uint32_t *)(TA_FLASH_BASE + 992 + 86))
 #endif
 
-#ifdef SLI_SI917
+#if defined(SLI_SI917B0) || defined(SLI_SI915)
 #ifdef SLI_SI91X_MCU_COMMON_FLASH_MODE
 #define SILICON_REV_WMCU  (*(volatile uint32_t *)(SILICON_REV_VALUES_OFFSET_COMMON_FLASH))
 #define PACKAGE_TYPE_WMCU (*(volatile uint32_t *)(PACKAGE_TYPE_VALUES_OFFSET_COMMON_FLASH))
@@ -129,6 +144,10 @@ typedef enum SLEEP_TYPE {
 /* Board capabilities */
 #define SLI_CRYPTOACC_PRESENT_SI91X
 
+/*XTAL bypass from MCU macros */
+#define XTAL_IS_IN_SW_CTRL_FROM_M4 0
+#define XTAL_DISABLE_FROM_M4       0
+
 /* system clock source look up table*/
 typedef struct SYSTEM_CLOCK_SOURCE_FREQUENCIES {
   uint32_t m4ss_ref_clk;
@@ -142,7 +161,7 @@ typedef struct SYSTEM_CLOCK_SOURCE_FREQUENCIES {
   uint32_t ro_32khz_clock;
   uint32_t rc_32khz_clock;
   uint32_t xtal_32khz_clock;
-  uint32_t rc_32mhz_clock;
+  uint32_t rc_mhz_clock;
   uint32_t ro_20mhz_clock;
   uint32_t doubler_clock;
   uint32_t sleep_clock;
@@ -189,6 +208,11 @@ extern void SystemInit(void);
 
 extern void SystemCoreClockUpdate(void);
 
+static inline uint32_t SystemCoreClockGet(void)
+{
+  return SystemCoreClock;
+}
+
 void RSI_Set_Cntrls_To_M4(void);
 void RSI_Set_Cntrls_To_TA(void);
 
@@ -199,8 +223,6 @@ void RSI_PS_RestoreCpuContext(void);
 void SystemCoreClockUpdate(void);
 void fpuInit(void);
 void RSI_Save_Context(void);
-/* System exception vector handler */
-//__attribute__((used)) void WEAK Reset_Handler(void);
 void NMI_Handler(void);
 void HardFault_Handler(void);
 void MemManage_Handler(void);

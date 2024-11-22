@@ -1,19 +1,31 @@
 /*******************************************************************************
-* @file  rsi_bt_common_apis.h
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ * @file  rsi_bt_common_apis.h
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 #ifndef RSI_BT_COMMON_APIS_H
 #define RSI_BT_COMMON_APIS_H
@@ -24,12 +36,17 @@
 /******************************************************
  * *                      Macros
  * ******************************************************/
-// success return value
+
+/** @addtogroup BT_BLE_CONSTANTS
+ *  @{
+ */
+
+/// success return value
 #define RSI_SUCCESS 0
 
-// failure return value
+/// failure return value
 #define RSI_FAILURE -1
-
+/** @} */
 /******************************************************
  * *                    Constants
  * ******************************************************/
@@ -60,7 +77,7 @@ extern "C" {
 #endif
 /*==============================================*/
 /**
- * @fn          int32_t rsi_bt_set_bd_addr(uint8_t *dev_addr)
+ * @fn          int32_t rsi_bt_set_bd_addr(const uint8_t *dev_addr)
  * @brief       Set the device BD address. This is a blocking API.
  * @pre Pre-conditions:
  *          - needs to be called immediately after device initialization.
@@ -71,11 +88,11 @@ extern "C" {
  *              - 3       - Command is given in wrong state (i.e., not immediate after opermode)
  * @note       This is a blocking API. Refer to the Status Codes section for the above error codes at [additional-status-codes](../wiseconnect-api-reference-guide-err-codes/sl-additional-status-errors) .
  */
-int32_t rsi_bt_set_bd_addr(uint8_t *dev_addr);
+int32_t rsi_bt_set_bd_addr(const uint8_t *dev_addr);
 
 /*==============================================*/
 /**
- * @fn         int32_t rsi_bt_set_local_name(uint8_t *local_name)
+ * @fn         int32_t rsi_bt_set_local_name(const uint8_t *local_name)
  * @brief      Set the given name to local device. This is a blocking API.
  * @pre Pre-conditions:
  * -        Device should be initialized before calling this API.
@@ -86,7 +103,7 @@ int32_t rsi_bt_set_bd_addr(uint8_t *dev_addr);
  *            - Non-Zero Value	-	Failure
  * @note       Refer to the Status Codes section for the above error codes at [additional-status-codes](../wiseconnect-api-reference-guide-err-codes/sl-additional-status-errors).
  */
-int32_t rsi_bt_set_local_name(uint8_t *local_name);
+int32_t rsi_bt_set_local_name(const uint8_t *local_name);
 
 /*==============================================*/
 /**
@@ -134,7 +151,7 @@ int32_t rsi_bt_get_local_name(rsi_bt_resp_get_local_name_t *bt_resp_get_local_na
  * @fn         int32_t rsi_bt_get_rssi(uint8_t *dev_addr, int8_t *resp)
  * @brief      Get the RSSI of the remote device. This is a blocking API.
  * @pre Pre-conditions:
- * -        \ref rsi_bt_connect() API need to be called before this API.
+ * -            rsi_bt_connect() API need to be called before this API.
  * @param[in]  dev_addr -  Remote device address.
  * @param[out] resp - Parameter to hold the response of this API, RSSI is filled in this resp parameter.
  * @return The following values are returned:
@@ -177,7 +194,6 @@ int32_t rsi_bt_get_bt_stack_version(rsi_bt_resp_get_bt_stack_version_t *bt_resp_
  * @pre Pre-conditions:
  *         - Device should be initialized before calling this API.  
  *         - If the device is in powersave, get back the device to ACTIVE MODE by using \ref rsi_bt_power_save_profile()
- * @param      None
  * @return The following values are returned:
  *             - 0		-	Success 
  *             - Non-Zero Value	-	Failure
@@ -190,8 +206,7 @@ int32_t rsi_bt_init(void);
  * @fn         int32_t 	rsi_bt_deinit(void)
  * @brief      Deinitialize the BT device. This is a blocking API.
  * @pre Pre-conditions:
- * -        \ref Device should be initialized before this API. 
- * @param      None
+ * -             Device should be initialized before this API. 
  * @return The following values are returned:
  *            - 0		-	Success 
  *            - Non-Zero Value	-	Failure
@@ -251,7 +266,7 @@ int32_t rsi_bt_power_save_profile(uint8_t psp_mode, uint8_t psp_type);
  * @fn          int32_t rsi_bt_per_stats(uint8_t cmd_type, struct rsi_bt_per_stats_s *rsi_bt_per_stats)
  * @brief       Request the local device for BT PER operation.
  * @pre Pre-conditions:
- * -         Call \ref rsi_bt_per_tx() or rsi_bt_per_rx() before calling this API.
+ * -         Call rsi_bt_per_tx() or rsi_bt_per_rx() before calling this API.
  * @param[in]   cmd_type - Parameter to define the command id type for PER operation. 
  *              - BT_PER_STATS_CMD_ID (0x08) - Command id enables PER statistics 
  *              - BT_TRANSMIT_CMD_ID (0x15) - Command id enables PER transmit 
@@ -260,7 +275,7 @@ int32_t rsi_bt_power_save_profile(uint8_t psp_mode, uint8_t psp_type);
  * @return The following values are returned:
  *              - 0			-	Success 
  *              - Non-Zero Value	-	Failure
- * @note       Refer Error Codes section for common error codes \ref error-codes .
+ * @note        Refer Error Codes section for common error codes error-codes.
  */
 int32_t rsi_bt_per_stats(uint8_t cmd_type, struct rsi_bt_per_stats_s *per_stats);
 
