@@ -1,19 +1,31 @@
 /*******************************************************************************
 * @file  rsi_rom_egpio.h
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2020 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 //Includes
 
@@ -84,14 +96,14 @@ STATIC INLINE void RSI_EGPIO_SetPin(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pi
 }
 
 /**
- * @fn           STATIC INLINE boolean_t RSI_EGPIO_GetPin(EGPIO_Type *pEGPIO ,uint8_t port,uint8_t pin)
+ * @fn           STATIC INLINE boolean_t RSI_EGPIO_GetPin(const EGPIO_Type *pEGPIO ,uint8_t port,uint8_t pin)
  * @brief        This API is used get the GPIO pin status.
  * @param[in]    pEGPIO  : Pointer to the EGPIO register instance
  * @param[in]    port    : GPIO port number
  * @param[in]    pin     : GPIO pin number
  * @return       returns Pin status
  */
-STATIC INLINE boolean_t RSI_EGPIO_GetPin(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin)
+STATIC INLINE boolean_t RSI_EGPIO_GetPin(const EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin)
 {
 #if defined(ROMDRIVER_PRESENT)
   return ROMAPI_EGPIO_API->egpio_get_pin(pEGPIO, port, pin);
@@ -101,14 +113,14 @@ STATIC INLINE boolean_t RSI_EGPIO_GetPin(EGPIO_Type *pEGPIO, uint8_t port, uint8
 }
 
 /**
- * @fn           STATIC INLINE boolean_t RSI_EGPIO_GetDir(EGPIO_Type *pEGPIO,uint8_t port ,uint8_t pin)
+ * @fn           STATIC INLINE boolean_t RSI_EGPIO_GetDir(const EGPIO_Type *pEGPIO,uint8_t port ,uint8_t pin)
  * @brief        This API is used to Get the Direction GPIO(Direction of the GPIO pin. '1' for INPUT,and '0'for OUTPUT)
  * @param[in]    pEGPIO  : Pointer to the EGPIO register instance
  * @param[in]    port    : GPIO port number
  * @param[in]    pin     : GPIO pin number
  * @return       returns the GPIO direction value
  */
-STATIC INLINE boolean_t RSI_EGPIO_GetDir(EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin)
+STATIC INLINE boolean_t RSI_EGPIO_GetDir(const EGPIO_Type *pEGPIO, uint8_t port, uint8_t pin)
 {
 #if defined(ROMDRIVER_PRESENT)
   return ROMAPI_EGPIO_API->egpio_get_dir(pEGPIO, port, pin);
@@ -307,13 +319,13 @@ STATIC INLINE void RSI_EGPIO_SetIntHighLevelDisable(EGPIO_Type *pEGPIO, uint8_t 
 }
 
 /**
- * @fn           uint8_t RSI_EGPIO_GetIntStat(EGPIO_Type *pEGPIO ,uint8_t intCh)
+ * @fn           uint8_t RSI_EGPIO_GetIntStat(const EGPIO_Type *pEGPIO ,uint8_t intCh)
  * @brief        This API is used to get the pin interrupt status register
  * @param[in]    pEGPIO  : Pointer to the EGPIO register instance
  * @param[in]    intCh   : GPIO pin interrupt channel number (0 to 7)
  * @return       returns the interrupt status register
  */
-STATIC INLINE uint8_t RSI_EGPIO_GetIntStat(EGPIO_Type *pEGPIO, uint8_t intCh)
+STATIC INLINE uint8_t RSI_EGPIO_GetIntStat(const EGPIO_Type *pEGPIO, uint8_t intCh)
 {
 #if defined(ROMDRIVER_PRESENT)
   return ROMAPI_EGPIO_API->egpio_get_int_stat(pEGPIO, intCh);
@@ -547,14 +559,14 @@ STATIC INLINE void RSI_EGPIO_TogglePort(EGPIO_Type *pEGPIO, uint8_t port, uint16
 }
 
 /**
- * @fn           STATIC INLINE uint16_t RSI_EGPIO_GetPort(EGPIO_Type *pEGPIO ,uint8_t port)
+ * @fn           STATIC INLINE uint16_t RSI_EGPIO_GetPort(const EGPIO_Type *pEGPIO ,uint8_t port)
  * @brief        This API is used to used to get the EGPIO port value.
  *               Reads the value on GPIO pins irrespective of the pin mode.
  * @param[in]    pEGPIO  : Pointer to the EGPIO register instance
  * @param[in]    port    : Port number to be read
  * @return       port value
  */
-STATIC INLINE uint16_t RSI_EGPIO_GetPort(EGPIO_Type *pEGPIO, uint8_t port)
+STATIC INLINE uint16_t RSI_EGPIO_GetPort(const EGPIO_Type *pEGPIO, uint8_t port)
 {
 #if defined(ROMDRIVER_PRESENT)
   return ROMAPI_EGPIO_API->egpio_get_port(pEGPIO, port);
@@ -745,13 +757,13 @@ STATIC INLINE void RSI_EGPIO_GroupIntOr(EGPIO_Type *pEGPIO, uint8_t grpInt)
 }
 
 /**
- * @fn           STATIC INLINE uint32_t RSI_EGPIO_GroupIntStat(EGPIO_Type *pEGPIO ,uint8_t grpInt)
+ * @fn           STATIC INLINE uint32_t RSI_EGPIO_GroupIntStat(const EGPIO_Type *pEGPIO ,uint8_t grpInt)
  * @brief        This API to used to get the group interrupt status
  * @param[in]    pEGPIO   : Pointer to the EGPIO register instance
  * @param[in]    grpInt   : Group interrupt number
  * @return       returns the group interrupt status register
  */
-STATIC INLINE uint32_t RSI_EGPIO_GroupIntStat(EGPIO_Type *pEGPIO, uint8_t grpInt)
+STATIC INLINE uint32_t RSI_EGPIO_GroupIntStat(const EGPIO_Type *pEGPIO, uint8_t grpInt)
 {
 #if defined(ROMDRIVER_PRESENT)
   return ROMAPI_EGPIO_API->egpio_group_int_stat(pEGPIO, grpInt);
@@ -960,7 +972,7 @@ STATIC INLINE void RSI_EGPIO_PadReceiverDisable(uint8_t u8GpioNum)
 
 /**
  * @fn           STATIC INLINE void  RSI_EGPIO_PadSdioConnected(void)
- * @brief        This API is used to use the SDIO pins(25 to 30) in M4 or TA (0 for M4SS and 1 for TASS)
+ * @brief        This API is used to use the SDIO pins(25 to 30) in M4 or NWP (0 for M4SS and 1 for TASS)
  * @return       None
  */
 STATIC INLINE void RSI_EGPIO_PadSdioConnected(void)

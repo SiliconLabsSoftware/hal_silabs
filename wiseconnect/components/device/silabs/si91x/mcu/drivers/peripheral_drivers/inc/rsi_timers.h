@@ -1,19 +1,31 @@
 /*******************************************************************************
 * @file  rsi_timers.h
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 //Include Files
 
@@ -54,7 +66,7 @@ extern "C" {
 #define ULP_TIMER_ULP_32KHZ_RO_CLK   1
 #define ULP_TIMER_ULP_32KHZ_RC_CLK   2
 #define ULP_TIMER_ULP_32KHZ_XTAL_CLK 3
-#define ULP_TIMER_ULP_32MHZ_RC_CLK   4
+#define ULP_TIMER_ULP_MHZ_RC_CLK     4
 #define ULP_TIMER_ULP_20MHZ_RO_CLK   5
 #define ULP_TIMER_SOC_CLK            6
 
@@ -67,8 +79,8 @@ typedef TIMERS_Type RSI_TIMERS_T;
 
 // brief  TIMERS Driver Capabilities.
 typedef struct {
-  uint32_t timerCount : 4;   // Number of Timers
-  uint32_t microSecMode : 1; // supports Micro second mode
+  unsigned int timerCount : 4;   // Number of Timers
+  unsigned int microSecMode : 1; // supports Micro second mode
 } RSI_TIMERS_CAPABILITIES_T;
 
 /// @brief Enumeration to represent ulp-timer direction
@@ -107,7 +119,7 @@ STATIC INLINE rsi_error_t RSI_TIMERS_SetDirection(RSI_TIMERS_T *pTIMER, uint8_t 
 
 /*===================================================*/
 /**
- * @fn          uint32_t RSI_TIMERS_getDirection(RSI_TIMERS_T *pTIMER, uint8_t timerNum)
+ * @fn          uint32_t RSI_TIMERS_getDirection(const RSI_TIMERS_T *pTIMER, uint8_t timerNum)
  * @brief   This API is used to get direction of the timer
  * @param[in]   pTIMER     : Pointer to the TIMERS instance register area
  * @param[in]   timerNum   : Timer number(0 to 3)
@@ -116,7 +128,7 @@ STATIC INLINE rsi_error_t RSI_TIMERS_SetDirection(RSI_TIMERS_T *pTIMER, uint8_t 
  *                        -  1 for UP_COUNTER
  *                        -  0 for DOWN_COUNTER
  */
-STATIC INLINE uint32_t RSI_TIMERS_getDirection(RSI_TIMERS_T *pTIMER, uint8_t timerNum)
+STATIC INLINE uint32_t RSI_TIMERS_getDirection(const RSI_TIMERS_T *pTIMER, uint8_t timerNum)
 {
   uint8_t counterDir;
   if (timerNum <= TIMER_3) {
@@ -129,13 +141,13 @@ STATIC INLINE uint32_t RSI_TIMERS_getDirection(RSI_TIMERS_T *pTIMER, uint8_t tim
 
 /*===================================================*/
 /**
- * @fn          uint32_t RSI_TIMERS_GetTimerMode(RSI_TIMERS_T *pTIMER, uint8_t timerNum)
+ * @fn          uint32_t RSI_TIMERS_GetTimerMode(const RSI_TIMERS_T *pTIMER, uint8_t timerNum)
  * @brief   This API is used to get the mode of timer
  * @param[in]   pTIMER     : Pointer to the TIMERS instance register area
  * @param[in]   timerNum   : Timer number(0 to 3)
  * @return    return the type of timer if valid timer else error code
  */
-STATIC INLINE uint32_t RSI_TIMERS_GetTimerMode(RSI_TIMERS_T *pTIMER, uint8_t timerNum)
+STATIC INLINE uint32_t RSI_TIMERS_GetTimerMode(const RSI_TIMERS_T *pTIMER, uint8_t timerNum)
 {
   if (timerNum <= TIMER_3) {
     return (pTIMER->MATCH_CTRL[timerNum].MCUULP_TMR_CNTRL_b.TMR_MODE);
@@ -254,13 +266,13 @@ STATIC INLINE rsi_error_t RSI_TIMERS_SetMatch(RSI_TIMERS_T *pTIMER, uint8_t time
 
 /*===================================================*/
 /**
- * @fn          rsi_error_t RSI_TIMERS_InterruptStatus(RSI_TIMERS_T *pTIMER , uint8_t timerNum)
+ * @fn          rsi_error_t RSI_TIMERS_InterruptStatus(const RSI_TIMERS_T *pTIMER , uint8_t timerNum)
  * @brief		This API is used to get the timer interrupt status 
  * @param[in]   pTIMER     : Pointer to the TIMERS instance register area
  * @param[in]   timerNum   : Timer number(0 to 3)                          
  * @return 		return the timer interrupt status if valid timer else 0. 
  */
-STATIC INLINE uint8_t RSI_TIMERS_InterruptStatus(RSI_TIMERS_T *pTIMER, uint8_t timerNum)
+STATIC INLINE uint8_t RSI_TIMERS_InterruptStatus(const RSI_TIMERS_T *pTIMER, uint8_t timerNum)
 {
   if (timerNum <= TIMER_3) {
     return (uint8_t)(pTIMER->MCUULP_TMR_INTR_STAT & (1 << timerNum));
@@ -322,13 +334,13 @@ STATIC INLINE rsi_error_t RSI_TIMERS_SetTimerMode(RSI_TIMERS_T *pTIMER, boolean_
 
 /*===================================================*/
 /**
- * @fn          uint32_t RSI_TIMERS_GetTimerType(RSI_TIMERS_T *pTIMER, uint8_t timerNum)
+ * @fn          uint32_t RSI_TIMERS_GetTimerType(const RSI_TIMERS_T *pTIMER, uint8_t timerNum)
  * @brief		This API is used to get the type of timer 
  * @param[in]   pTIMER     : Pointer to the TIMERS instance register area
  * @param[in]   timerNum   : Timer number(0 to 3)                          
  * @return 		return the type of timer if valid timer else error code 
  */
-STATIC INLINE uint32_t RSI_TIMERS_GetTimerType(RSI_TIMERS_T *pTIMER, uint8_t timerNum)
+STATIC INLINE uint32_t RSI_TIMERS_GetTimerType(const RSI_TIMERS_T *pTIMER, uint8_t timerNum)
 {
   if (timerNum <= TIMER_3) {
     return (pTIMER->MATCH_CTRL[timerNum].MCUULP_TMR_CNTRL_b.TMR_TYPE);
