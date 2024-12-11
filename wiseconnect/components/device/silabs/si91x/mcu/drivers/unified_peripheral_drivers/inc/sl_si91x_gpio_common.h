@@ -1,32 +1,31 @@
-/***************************************************************************/ /**
- * @file sl_si91x_gpio_common.h
- * @brief General Purpose IO (GPIO) API implementation
- *******************************************************************************
- * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
- *******************************************************************************
- *
- * SPDX-License-Identifier: Zlib
- *
- * The licenser of this software is Silicon Laboratories Inc.
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be mis-represented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    mis-represented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- * ******************************************************************************/
+/******************************************************************************
+* @file sl_si91x_gpio_common.h
+*******************************************************************************
+* # License
+* <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+*******************************************************************************
+*
+* SPDX-License-Identifier: Zlib
+*
+* The licensor of this software is Silicon Laboratories Inc.
+*
+* This software is provided 'as-is', without any express or implied
+* warranty. In no event will the authors be held liable for any damages
+* arising from the use of this software.
+*
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+*
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+*
+******************************************************************************/
 #ifndef SL_SI91X_GPIO_COMMONH
 #define SL_SI91X_GPIO_COMMONH
 
@@ -143,7 +142,11 @@ extern "C" {
    : port == 2 ? ((pin > GPIO_PC_PIN_MAX_VALIDATE) ? 0 : 1) \
    : port == 3 ? ((pin > GPIO_PD_PIN_MAX_VALIDATE) ? 0 : 1) \
                : 0)
-
+///< Validate GPIO host pad port and pin
+#define SL_GPIO_VALIDATE_HOST_PIN(port, pin)                                                             \
+  (port == SL_GPIO_PORT_A   ? (((pin >= HOST_PAD_MIN) && (pin <= HOST_PAD_MAX)) ? TRUE : FALSE)          \
+   : port == SL_GPIO_PORT_B ? (((pin >= GPIO_PIN_NUMBER9) && (pin <= GPIO_PIN_NUMBER14)) ? TRUE : FALSE) \
+                            : FALSE)
 #define SL_GPIO_VALIDATE_ULP_PORT_PIN(port, pin)  (port == 4 ? ((pin > 11) ? 0 : 1) : 0) ///< Validate ULP port and pin
 #define SL_GPIO_VALIDATE_UULP_PORT_PIN(port, pin) (port == 5 ? ((pin > 5) ? 0 : 1) : 0)  ///< Validate UULP port and pin
 
@@ -335,7 +338,7 @@ typedef struct {
       __IOM uint32_t GPIO_REN : 1;        ///< [3..3] Receiver of PAD enable
       __IOM uint32_t GPIO_OEN : 1;        ///< [4..4] Direction of PAD
       __IOM uint32_t GPIO_OUTPUT : 1;     ///< [5..5] Value driven on PAD in OUTPUT mode
-      __IOM uint32_t GPIO_PAD_SELECT : 1; ///< [6..6] PAD selection between M4,TA
+      __IOM uint32_t GPIO_PAD_SELECT : 1; ///< [6..6] PAD selection between M4,NWP
       __IOM uint32_t RESERVED : 1;        ///< [7..7] Reserved
       __IOM uint32_t GPIO_POLARITY : 1;   ///< [8..8] Polarity of UULP GPIO
       __IOM uint32_t RESERVED1 : 23;      ///< [31..9] Reserved1

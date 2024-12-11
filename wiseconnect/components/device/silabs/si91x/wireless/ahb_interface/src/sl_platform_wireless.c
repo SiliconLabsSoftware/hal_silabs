@@ -1,19 +1,31 @@
-/*******************************************************************************
+/***************************************************************************/ /**
  * @file  sl_platform_wireless.c
-* @brief 
-*******************************************************************************
-* # License
-* <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
-*******************************************************************************
-*
-* The licensor of this software is Silicon Laboratories Inc. Your use of this
-* software is governed by the terms of Silicon Labs Master Software License
-* Agreement (MSLA) available at
-* www.silabs.com/about-us/legal/master-software-license-agreement. This
-* software is distributed to you in Source Code format and is governed by the
-* sections of the MSLA applicable to Source Code.
-*
-******************************************************************************/
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 #include "rsi_wisemcu_hardware_setup.h"
 #include "rsi_m4.h"
@@ -30,10 +42,10 @@
 #include "sl_rsi_utility.h"
 
 extern osEventFlagsId_t si91x_events;
-extern osEventFlagsId_t si91x_bus_events;
 extern osEventFlagsId_t si91x_async_events;
 extern uint32_t frontend_switch_control;
 extern osMutexId_t side_band_crypto_mutex;
+extern sli_si91x_command_queue_t cmd_queues[SI91X_CMD_MAX];
 
 /** @addtogroup SOC2
 * @{
@@ -55,7 +67,7 @@ void sl_si91x_hardware_setup(void)
   RSI_ULPSS_TimerClkDisable(ULPCLK);
 #endif
 
-#if !(defined(SLI_SI917) || defined(SLI_SI917B0))
+#if !(defined(SLI_SI917) || defined(SLI_SI915))
   /* Disable 40MHz Clocks*/
   RSI_ULPSS_DisableRefClks(MCU_ULP_40MHZ_CLK_EN);
 #endif
@@ -120,7 +132,7 @@ void sl_si91x_hardware_setup(void)
                                     | ULPSS_2K_BANK_4 | ULPSS_2K_BANK_5 | ULPSS_2K_BANK_6 | ULPSS_2K_BANK_7);
 #endif
 
-#ifdef SLI_SI917
+#if defined(SLI_SI917) || defined(SLI_SI915)
   /* Power-Down Unused M4SS Domains */
   RSI_PS_M4ssPeriPowerDown(
 #ifndef SLI_SI91X_MCU_ENABLE_FLASH_BASED_EXECUTION
@@ -156,7 +168,7 @@ void sl_si91x_hardware_setup(void)
 }
 
 /**
- * @brief  This API is used to configure wireless GPIO front end controls from TA to M4
+ * @brief  This API is used to configure wireless GPIO front end controls from NWP to M4
  * @return none
  */
 void sli_si91x_configure_wireless_frontend_controls(uint32_t switch_sel)
@@ -167,7 +179,7 @@ void sli_si91x_configure_wireless_frontend_controls(uint32_t switch_sel)
       //!GPIO 46,47,48
       break;
     case FRONT_END_SWITCH_SEL1:
-#ifdef SLI_SI917B0
+#if defined(SLI_SI917B0) || defined(SLI_SI915)
     {
       //!Program GPIO mode6 in ULP for ULP4,ULP5,ULP0 GPIOS
       RSI_EGPIO_SetPinMux(EGPIO1, 0, GPIO4, 6);
@@ -181,7 +193,7 @@ void sli_si91x_configure_wireless_frontend_controls(uint32_t switch_sel)
 #endif
     break;
     case FRONT_END_SWITCH_SEL2:
-#ifndef SLI_SI917B0
+#if !defined(SLI_SI917B0) && !defined(SLI_SI915)
       //!Program GPIO mode6 in ULP for ULP4,ULP5,ULP0 GPIOS
       RSI_EGPIO_SetPinMux(EGPIO1, 0, GPIO4, 6);
       RSI_EGPIO_SetPinMux(EGPIO1, 0, GPIO5, 6);
@@ -189,12 +201,14 @@ void sli_si91x_configure_wireless_frontend_controls(uint32_t switch_sel)
 #endif
       break;
     case FRONT_END_SWITCH_SEL3:
-#ifndef SLI_SI917B0
+#if !defined(SLI_SI917B0) && !defined(SLI_SI915)
       //!Program GPIO mode6 in ULP for ULP4,ULP5,ULP7 GPIOS
       RSI_EGPIO_SetPinMux(EGPIO1, 0, GPIO4, 6);
       RSI_EGPIO_SetPinMux(EGPIO1, 0, GPIO5, 6);
       RSI_EGPIO_SetPinMux(EGPIO1, 0, GPIO7, 6);
 #endif
+      break;
+    default:
       break;
   }
 #endif
@@ -252,7 +266,7 @@ void sl_si91x_configure_ram_retention(uint32_t rams_in_use, uint32_t rams_retent
   RSI_PS_M4ssRamBanksPowerDown(rams_to_be_powered_down);
 
   /* Turn off Unused SRAM Core/Periphery domains*/
-  RSI_PS_M4ssRamBanksPeriPowerDown(rams_in_use);
+  RSI_PS_M4ssRamBanksPeriPowerDown(rams_to_be_powered_down);
 
   /* Clear all RAM retention control before configuring the user RAM retentions*/
   RSI_PS_ClrRamRetention(M4ULP_RAM16K_RETENTION_MODE_EN | TA_RAM_RETENTION_MODE_EN | M4ULP_RAM_RETENTION_MODE_EN);

@@ -32,15 +32,13 @@
 #include "sl_wifi_device.h"
 #include "sl_additional_status.h"
 
-#define CONVERTED_FIRMWARE_STATUS_INDEX 0
-
 /******************************************************************************
  * A utility function to extract firmware status from RX packet.
  * The extracted firmware status can be given to convert_and_save_firmware_status() to get sl_status equivalent.
  * @param packet packet that contains the frame status which needs to be extracted.
  * @return  frame status
  *****************************************************************************/
-static inline uint16_t get_si91x_frame_status(sl_si91x_packet_t *packet)
+static inline uint16_t get_si91x_frame_status(const sl_si91x_packet_t *packet)
 {
   return (uint16_t)(packet->desc[12] + (packet->desc[13] << 8));
 }
@@ -51,7 +49,7 @@ static inline uint16_t get_si91x_frame_status(sl_si91x_packet_t *packet)
  * @param[in] si91x_firmware_status
  *   si91x_firmware_status that needs to be converted to sl_status_t.
  * @return
- *   sl_status_t. See https://docs.silabs.com/gecko-platform/4.1/common/api/group-status for details.
+ *   sl_status_t. See https://docs.silabs.com/gecko-platform/latest/platform-common/status for details.
  *****************************************************************************/
 static inline sl_status_t convert_and_save_firmware_status(uint16_t si91x_firmware_status)
 {
@@ -59,14 +57,13 @@ static inline sl_status_t convert_and_save_firmware_status(uint16_t si91x_firmwa
                                                                                   : (si91x_firmware_status | BIT(16));
   return converted_firmware_status;
 }
-
 /******************************************************************************
  * @brief
  *   A utility function that converts si91x_status_t to sl_status_t
  * @param[in] si91x_status
  *   si91x_status that needs to be converted to sl_status_t.
  * @return
- *   sl_status_t. See https://docs.silabs.com/gecko-platform/4.1/common/api/group-status for details.
+ *   sl_status_t. See https://docs.silabs.com/gecko-platform/latest/platform-common/status for details.
  *****************************************************************************/
 static inline sl_status_t convert_si91x_status_to_sl_status(si91x_status_t si91x_status)
 {
@@ -108,24 +105,59 @@ static inline sl_status_t convert_si91x_status_to_sl_status(si91x_status_t si91x
   }
 }
 
-/******************************************************************************
- * @brief
- *   Atomically append given buffer to the end of a buffer queue
- * @param[in] queue
- *   Destination buffer queue
- * @param[in] buffer
- *   Buffer
- *****************************************************************************/
+/**
+ * @brief Atomically append a given buffer to the end of a buffer queue.
+ * 
+ * This function appends a buffer to the end of a specified buffer queue in an atomic operation,
+ * ensuring thread safety during the append operation.
+ *
+ * @param[in] queue Pointer to the destination buffer queue where the buffer will be appended.
+ * @param[in] buffer Pointer to the buffer that is to be appended to the queue.
+ */
 void sli_si91x_append_to_buffer_queue(sl_si91x_buffer_queue_t *queue, sl_wifi_buffer_t *buffer);
+
+/**
+ * @brief Atomically remove the head buffer from a buffer queue.
+ * 
+ * This function removes the buffer at the head of the specified buffer queue in an atomic operation,
+ * ensuring thread safety during the removal. The removed buffer is then passed back through a pointer
+ * to the caller.
+ *
+ * @param[in] queue Pointer to the source buffer queue from which the head buffer will be removed.
+ * @param[out] buffer Pointer to a pointer of sl_wifi_buffer_t where the removed buffer's address will be stored.
+ * @return sl_status_t Returns the status of the operation. A value of 0 (SL_STATUS_OK) indicates success.
+ *                     Other values indicate failure. See https://docs.silabs.com/gecko-platform/latest/platform-common/status for details.
+ */
+sl_status_t sli_si91x_pop_from_buffer_queue(sl_si91x_buffer_queue_t *queue, sl_wifi_buffer_t **buffer);
+
+/**
+ * @brief
+ *   Allocate a buffer to send a command
+ * @param[out] host_buffer
+ *   Destination buffer object
+ * @param[out] buffer
+ *   Start of the internal buffer data
+ * @param[in] requested_buffer_size
+ *   Requested buffer size
+ * @param[in] wait_duration_ms
+ *   Duration to wait for buffer to become available
+ * @return sl_status_t Returns the status of the operation. A value of 0 (SL_STATUS_OK) indicates success.
+ *                     Other values indicate failure. See https://docs.silabs.com/gecko-platform/latest/platform-common/status for details.
+ */
+sl_status_t sli_si91x_allocate_command_buffer(sl_wifi_buffer_t **host_buffer,
+                                              void **buffer,
+                                              uint32_t requested_buffer_size,
+                                              uint32_t wait_duration_ms);
 
 /******************************************************************************
  * @brief
- *   Atomically remove the head from a buffer queue
+ *   Check if buffer queue is empty
  * @param[in] queue
- *   Source buffer queue
- * @param[in] buffer
- *   Destination buffer
-  * @return
- *   sl_status_t. See https://docs.silabs.com/gecko-platform/4.1/common/api/group-status for details.
+ *   Requested buffer size
+ * @return
+ *   true if empty; false if not empty.
  *****************************************************************************/
-sl_status_t sli_si91x_pop_from_buffer_queue(sl_si91x_buffer_queue_t *queue, sl_wifi_buffer_t **buffer);
+static inline bool sli_si91x_buffer_queue_empty(sl_si91x_buffer_queue_t *queue)
+{
+  return (queue->head == NULL);
+}
