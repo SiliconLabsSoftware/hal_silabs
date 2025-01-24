@@ -32,4 +32,17 @@
 
 #define SL_NET_EVENT_DISPATCH_HANDLER(data, packet) sl_net_si91x_event_dispatch_handler(data, packet)
 
-void sl_net_si91x_event_dispatch_handler(sl_si91x_queue_packet_t *data, sl_si91x_packet_t *packet);
+void sl_net_si91x_event_dispatch_handler(sli_si91x_queue_packet_t *data, sl_si91x_packet_t *packet);
+
+#define SLI_NETWORK_CLEANUP_HANDLER() sli_si91x_network_cleanup_handler()
+
+void sli_si91x_network_cleanup_handler();
+
+#if defined(SL_WIFI_COMPONENT_INCLUDED)
+/*
+This function flushes all transmit (TX) command and data queues for sockets that match a given destination IP address.
+It iterates through all available sockets, checks if a socket's remote address matches the specified IP address,
+and then flushes the command and data queues for that socket based on the provided frame_status*/
+sl_status_t sli_si91x_flush_all_socket_tx_queues_based_on_dest_ip_address(uint16_t frame_status,
+                                                                          const sl_ip_address_t *dest_ip_add);
+#endif
