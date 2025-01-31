@@ -11,3 +11,6 @@ sed -i '' "s/   first/first/" simplicity_sdk/platform/common/inc/sl_common.h
 
 # Replace legacy Kconfig option name
 sed -i '' "s/CONFIG_SOC_FAMILY_EXX32/__ZEPHYR__/" simplicity_sdk/platform/emlib/inc/em_ramfunc.h
+
+# Add Zephyr OS abstraction for crypto
+sed -i '' "s/#\(if defined(SL_CATALOG_MICRIUMOS_KERNEL_PRESENT)\)/#if defined(__ZEPHYR__)\n  #include \"sli_psec_osal_zephyr.h\"\n  #define SLI_PSEC_THREADING\n#el\1/" simplicity_sdk/platform/security/sl_component/sli_psec_osal/inc/sli_psec_osal.h
