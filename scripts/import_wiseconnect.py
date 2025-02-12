@@ -25,7 +25,6 @@ paths = [
     "components/device/silabs/si91x/mcu/core/chip/inc/base_types.h",
     "components/device/silabs/si91x/mcu/core/chip/inc/data_types.h",
     "components/device/silabs/si91x/mcu/core/chip/inc/em_device.h",
-    "components/device/silabs/si91x/mcu/core/chip/inc/RS1xxxx.h",
     "components/device/silabs/si91x/mcu/core/chip/inc/rsi_ccp_common.h",
     "components/device/silabs/si91x/mcu/core/chip/inc/rsi_error.h",
     "components/device/silabs/si91x/mcu/core/chip/inc/rsi_ps_ram_func.h",
