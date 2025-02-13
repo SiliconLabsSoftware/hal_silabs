@@ -31,16 +31,10 @@
 
 #include <stdint.h>
 #include <sys/socket.h>
-#include <sys/select.h>
 
 #include "sl_si91x_types.h"
 #include "cmsis_os2.h" // CMSIS RTOS2
 #include "sl_si91x_protocol_types.h"
-
-/* NUMBER_OF_BSD_SOCKETS must be < 32 (sizeof(unsigned) * 8) */
-typedef struct sl_si91x_fd_set {
-	unsigned int __fds_bits;
-} sl_si91x_fd_set;
 
 /**
  * @addtogroup SI91X_SOCKET_FUNCTIONS
