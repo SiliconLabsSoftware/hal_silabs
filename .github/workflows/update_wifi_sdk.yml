@@ -1,0 +1,109 @@
+name: Update SDK
+
+on:
+  repository_dispatch:
+    types: [update_sdk]
+
+jobs:
+  update_sdk:
+    runs-on: self-hosted
+    name: silabs-internal
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          username: ${{ secrets.REPO_USERNAME }}
+          token: ${{ secrets.REPO_TOKEN }}
+          fetch-depth: 0
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Create/Update branch for new SDK changes
+        run: |
+          BRANCH_NAME="${{ github.event.client_payload.branch_name }}"
+          if git checkout --track "origin/${BRANCH_NAME}"; then 
+            git checkout ${BRANCH_NAME}
+            git pull origin ${BRANCH_NAME}
+          else
+            git checkout -b ${BRANCH_NAME}
+          fi
+
+      - name: Download SDK from Artifactory
+        run: |
+          curl -s -o sdk.zip "${{ github.event.client_payload.artifactory_url }}"
+          unzip sdk.zip -d wiseconnect_updated
+ 
+      - name: Load files to copy from YAML
+        shell: python
+        run: |
+          import yaml
+          import os
+          from pathlib import Path
+          import shutil
+
+          # Get the list of wiseconnect SDK source files needed for Zephyr
+          with open('.github/wiseconnect.yml', 'r') as file:
+            data = yaml.safe_load(file)
+
+          if data and 'files' in data:
+            files_to_copy = data['files']
+          else:
+            files_to_copy = []
+
+          # Copying wiseconnect SDK source files to respective paths
+          for file in files_to_copy:
+            extracted_file_path = Path("wiseconnect_updated") / file
+            target_file_path = Path("wiseconnect") / file
+
+            if extracted_file_path.exists():
+              print("Copying file "+ str(target_file_path))
+              try:
+                target_dir_path = os.path.dirname(target_file_path)
+                os.makedirs(target_dir_path, exist_ok=True)
+                shutil.copy2(extracted_file_path, target_file_path)
+              except Exception as e:
+                print(f"unexpected error: {e}")
+            else:
+              print(str(target_file_path) + " Not found in the sdk package")
+
+      - name: Remove downloaded artifacts
+        run: |
+          rm -rf wiseconnect_updated sdk.zip
+
+      - name: Configure Git and Publish Changes
+        run: |
+          git config --local user.name "wifi-ci-agent"
+          git config --local user.email "wifi-ci-agent@users.noreply.silabs.com"
+          changed_files=$(git diff --name-status)
+          echo "Changed Files ${changed_files}"
+          # If there are any changed files, push changes to the branch.
+          if [[ -n "$changed_files" ]]; then
+            git add -A
+            git commit -m "Update SDK"
+            git push --set-upstream origin "${{ github.event.client_payload.branch_name }}"
+            UPDATED_COMMIT=$(git rev-parse HEAD)
+            echo "UPDATED_COMMIT=${UPDATED_COMMIT}" >> $GITHUB_ENV
+            echo "COMMIT_CHANGED=true" >> $GITHUB_ENV
+          else
+            echo "WiseConnect SDK has no updates related to zephyr"
+            echo "COMMIT_CHANGED=false" >> $GITHUB_ENV
+          fi
+      
+      - name: Trigger webhook to zephyr-silabs repo to test new Wiseconnect SDK changes
+        if: env.COMMIT_CHANGED == 'true'
+        run: |
+          echo "triggering build to zephyr-silabs with commitID: ${UPDATED_COMMIT}"
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
+            https://api.github.com/repos/SiliconLabsSoftware/zephyr-silabs/dispatches \
+            -d '{"event_type": "update_project_revision", "client_payload": {"project_name": "hal_silabs", "commit_id": "'$UPDATED_COMMIT'"}}'
