@@ -152,6 +152,11 @@ void SystemCoreClockUpdate(void) /* Get Core Clock Frequency      */
 #endif
   /*Initialize IPMU and MCU FSM blocks */
   RSI_Ipmu_Init();
+
+  /*Configuring the ULP reference clock to 40MHz, as this frequency is required by the temperature sensor for chip supply mode configuration.*/
+  system_clocks.rf_ref_clock = DEFAULT_40MHZ_CLOCK;
+  RSI_ULPSS_RefClkConfig(ULPSS_40MHZ_CLK);
+
   /*configures chip supply mode */
   RSI_Configure_Ipmu_Mode();
 

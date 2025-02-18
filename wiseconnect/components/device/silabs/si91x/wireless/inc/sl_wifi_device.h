@@ -752,12 +752,11 @@
 #define SL_SI91X_EXT_FEAT_PUF BIT(7)
 
 /**
- * @def SL_SI91X_EXT_FEAT_SPECTRAL_MASK_NOKIA
- * @brief Nokia Spectral mask extended custom bitmap (currently not supported).
- * @details Enabling this bit allows the device to support the Nokia Spectral mask for extended custom bitmap configurations.
+ * @def SL_SI91X_EXT_FEAT_NWP_QSPI_80MHZ_CLK_ENABLE
+ * @brief To switch NWP QSPI clock to 80MHz.
+ * @details Enabling this bit switches the NWP QSPI clock from the default 40MHz to 80MHz. By increasing the QSPI clock speed, flash execution accelerates, resulting in improved throughput (in cases where flash execution is involved).
  */
-#define SL_SI91X_EXT_FEAT_SPECTRAL_MASK_NOKIA BIT(8)
-
+#define SL_SI91X_EXT_FEAT_NWP_QSPI_80MHZ_CLK_ENABLE BIT(8)
 /**
  * @def SL_SI91X_EXT_HTTP_SKIP_DEFAULT_LEADING_CHARACTER
  * @brief Extended feature bitmap to skip default leading character '\' in HTTP header.
