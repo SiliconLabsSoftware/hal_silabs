@@ -118,7 +118,6 @@ int sl_si91x_setsockopt(int32_t sockID, int level, int option_name, const void *
 
   // Retrieve the socket using the socket index
   sli_si91x_socket_t *si91x_socket = get_si91x_socket(sockID);
-  sl_si91x_time_value *timeout     = NULL;
   uint16_t timeout_val;
 
   // Check if the socket is valid
@@ -130,14 +129,15 @@ int sl_si91x_setsockopt(int32_t sockID, int level, int option_name, const void *
   switch (option_name) {
     case SL_SI91X_SO_RCVTIME: {
       // Configure receive timeout
-      timeout = (sl_si91x_time_value *)option_value;
+      const sl_si91x_time_value *timeout_const = (const sl_si91x_time_value *)option_value;
+      sl_si91x_time_value timeout              = *timeout_const;
 
       // Ensure that the timeout value is at least 1 millisecond
-      if ((timeout->tv_sec == 0) && (timeout->tv_usec != 0) && (timeout->tv_usec < 1000)) {
-        timeout->tv_usec = 1000;
+      if ((timeout.tv_sec == 0) && (timeout.tv_usec != 0) && (timeout.tv_usec < 1000)) {
+        timeout.tv_usec = 1000;
       }
       // Calculate the timeout value in milliseconds
-      timeout_val = (uint16_t)((timeout->tv_usec / 1000) + (timeout->tv_sec * 1000));
+      timeout_val = (uint16_t)((timeout.tv_usec / 1000) + (timeout.tv_sec * 1000));
 
       // Need to add check here if Synchronous bit map is set (after async socket_id implementation)
       memcpy(&si91x_socket->read_timeout,
@@ -177,29 +177,26 @@ int sl_si91x_setsockopt(int32_t sockID, int level, int option_name, const void *
 
     case SL_SI91X_SO_SSL_ENABLE: {
       // Enable SSL for the socket
-      SET_ERRNO_AND_RETURN_IF_TRUE((*(uint8_t *)option_value) != SI91X_SOCKET_FEAT_SSL, EINVAL);
-      si91x_socket->ssl_bitmap |= SI91X_SOCKET_FEAT_SSL;
+      SET_ERRNO_AND_RETURN_IF_TRUE((*(uint8_t *)option_value) != SL_SI91X_ENABLE_TLS, EINVAL);
+      si91x_socket->ssl_bitmap |= SL_SI91X_ENABLE_TLS;
       break;
     }
     case SL_SI91X_SO_SSL_V_1_0_ENABLE: {
       // Enable SSL version 1.0 for the socket
-      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_0)),
-                                   EINVAL);
-      si91x_socket->ssl_bitmap |= SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_0;
+      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_0)), EINVAL);
+      si91x_socket->ssl_bitmap |= SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_0;
       break;
     }
     case SL_SI91X_SO_SSL_V_1_1_ENABLE: {
       // Enable SSL version 1.1 for the socket
-      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_1)),
-                                   EINVAL);
-      si91x_socket->ssl_bitmap |= SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_1;
+      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_1)), EINVAL);
+      si91x_socket->ssl_bitmap |= SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_1;
       break;
     }
     case SL_SI91X_SO_SSL_V_1_2_ENABLE: {
       // Enable SSL version 1.2 for the socket
-      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_2)),
-                                   EINVAL);
-      si91x_socket->ssl_bitmap |= SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_2;
+      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_2)), EINVAL);
+      si91x_socket->ssl_bitmap |= SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_2;
       break;
     }
 
@@ -218,9 +215,8 @@ int sl_si91x_setsockopt(int32_t sockID, int level, int option_name, const void *
 #if defined(SLI_SI917) || defined(SLI_SI915)
     case SL_SI91X_SO_SSL_V_1_3_ENABLE: {
       // Enable SSL version 1.3 for the socket.
-      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_3)),
-                                   EINVAL);
-      si91x_socket->ssl_bitmap |= SI91X_SOCKET_FEAT_SSL | SL_SI91X_TLS_V_1_3;
+      SET_ERRNO_AND_RETURN_IF_TRUE(((*(uint8_t *)option_value) != (SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_3)), EINVAL);
+      si91x_socket->ssl_bitmap |= SL_SI91X_ENABLE_TLS | SL_SI91X_TLS_V_1_3;
       break;
     }
 #endif
@@ -405,8 +401,8 @@ int sl_si91x_sendto_async(int socket,
     request.data_offset = (si91x_socket->type == SOCK_STREAM) ? TCP_V6_HEADER_LENGTH : UDP_V6_HEADER_LENGTH;
     const uint8_t *destination_ip =
       (si91x_socket->state == UDP_UNCONNECTED_READY || to_addr_len >= sizeof(struct sockaddr_in6))
-        ? socket_address->sin6_addr.s6_addr
-        : si91x_socket->remote_address.sin6_addr.s6_addr;
+        ? socket_address->sin6_addr.__u6_addr.__u6_addr8
+        : si91x_socket->remote_address.sin6_addr.__u6_addr.__u6_addr8;
 
     memcpy(&request.dest_ip_addr.ipv6_address[0], destination_ip, SL_IPV6_ADDRESS_LENGTH);
   } else {
@@ -546,7 +542,7 @@ int sl_si91x_recvfrom(int socket,
 
       ipv6_socket_address->sin6_port   = response->dest_port;
       ipv6_socket_address->sin6_family = AF_INET;
-      memcpy(&ipv6_socket_address->sin6_addr.s6_addr,
+      memcpy(&ipv6_socket_address->sin6_addr.__u6_addr.__u6_addr8,
              response->dest_ip_addr.ipv6_address,
              SL_IPV6_ADDRESS_LENGTH);
 
@@ -562,9 +558,9 @@ int sl_si91x_recvfrom(int socket,
 }
 
 int sl_si91x_select(int nfds,
-                    sl_si91x_fd_set *readfds,
-                    sl_si91x_fd_set *writefds,
-                    sl_si91x_fd_set *exceptfds,
+                    fd_set *readfds,
+                    fd_set *writefds,
+                    fd_set *exceptfds,
                     const struct timeval *timeout,
                     sl_si91x_socket_select_callback_t callback)
 {

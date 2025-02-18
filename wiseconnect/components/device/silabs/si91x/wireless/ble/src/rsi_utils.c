@@ -171,7 +171,7 @@ int8_t rsi_ascii_hex2num(int8_t ascii_hex_in)
 int8_t rsi_char_hex2dec(int8_t *cBuf)
 {
   int8_t k       = 0;
-  size_t buf_len = strlen((char *)cBuf);
+  size_t buf_len = sl_strlen((char *)cBuf);
   for (uint8_t i = 0; i < buf_len; i++) {
     k = ((k * 16) + rsi_ascii_hex2num(cBuf[i]));
   }
@@ -195,7 +195,7 @@ uint8_t *rsi_ascii_dev_address_to_6bytes_rev(uint8_t *hex_addr, int8_t *ascii_ma
 
   byteNum        = 5;
   cBufPos        = 0;
-  size_t buf_len = strnlen((char *)ascii_mac_address, MAX_MAC_ADDRESS_STRING_LENGTH);
+  size_t buf_len = sl_strnlen((char *)ascii_mac_address, MAX_MAC_ADDRESS_STRING_LENGTH);
   for (uint8_t i = 0; i < buf_len; i++) {
     // this will take care of the first 5 octets
     if (ascii_mac_address[i] == ':') {                                 // we are at the end of the address octet
@@ -482,6 +482,34 @@ void rsi_ascii_dot_address_to_4bytes(uint8_t *hexAddr, int8_t *asciiDotAddress)
   // terminate the string
   // convert the strint to an integer
   hexAddr[byteNum] = (uint8_t)rsi_atoi(cBuf);
+}
+/*=============================================================================*/
+/**
+ * @fn         uint64_t ip_to_reverse_hex(char *ip)
+ * @brief      Convert IP address to reverse Hex format.  
+ * @param[in]  ip - IP address to convert. 
+ * @return     IP address in reverse Hex format 
+ */
+uint64_t ip_to_reverse_hex(const char *ip)
+{
+  uint32_t ip1;
+  uint32_t ip2;
+  uint32_t ip3;
+  uint32_t ip4;
+  uint64_t ip_hex;
+  uint32_t status;
+
+  status = sscanf(ip, "%lu.%lu.%lu.%lu", &ip1, &ip2, &ip3, &ip4);
+  if (status != 4) {
+    return 0x00000000; // Problem if we actually pass 0.0.0.0
+  }
+
+  ip_hex = (uint64_t)ip1;
+  ip_hex |= (uint64_t)(ip2 << 8);
+  ip_hex |= (uint64_t)(ip3 << 16);
+  ip_hex |= (uint64_t)(ip4 << 24);
+
+  return ip_hex;
 }
 /*=============================================================================*/
 /**

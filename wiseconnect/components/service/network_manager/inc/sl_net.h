@@ -78,6 +78,8 @@
  * @note
  *  The \p network_context parameter is used only when the module is acting as a station in external stack mode (lwIP).
  *  In this case, \p network_context should refer to a valid @ref sl_net_wifi_lwip_context_t variable.
+ * @note
+ *  In SoC mode, wireless initialization must be completed before using the NVM3 APIs in the common flash, as flash write and erase operations require communication between the NWP & M4.
  ******************************************************************************/
 sl_status_t sl_net_init(sl_net_interface_t interface,
                         const void *configuration,
@@ -327,8 +329,7 @@ sl_status_t sl_net_delete_profile(sl_net_interface_t interface, sl_net_profile_i
  *   sl_status_t. See [Status Codes](https://docs.silabs.com/gecko-platform/latest/platform-common/status) and [Additional Status Codes](../wiseconnect-api-reference-guide-err-codes/sl-additional-status-errors) for details.
  *   If the credential is NULL or the credential length is zero, this API will return an error `SL_STATUS_INVALID_PARAMETER`.
  * @note
- * - Certificates should follow standard *.pem format  
- * - A PEM encoded file includes Base64 data. 
+ * - Certificates should follow the standard array format.  
  * - After every 64 bytes, the special character `\n` should be used as a delimiter.
  * - The private key is prefixed with a header like "-----BEGIN PRIVATE KEY-----" line and postfixed with an footer like"-----END PRIVATE KEY-----". 
  * - Certificates are prefixed with a header like "-----BEGIN CERTIFICATE-----" line and postfixed with an footer like"-----END CERTIFICATE-----" line. 

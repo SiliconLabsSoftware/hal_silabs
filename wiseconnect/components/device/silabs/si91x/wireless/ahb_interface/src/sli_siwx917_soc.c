@@ -27,9 +27,7 @@
  *
  ******************************************************************************/
 
-#if defined(SL_COMPONENT_CATALOG_PRESENT)
 #include "sl_component_catalog.h"
-#endif
 #include "system_si91x.h"
 #include "rsi_error.h"
 #include "rsi_ccp_common.h"

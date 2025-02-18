@@ -30,10 +30,10 @@
 #pragma once
 
 #include <stdint.h>
-#include <sys/socket.h>
-
 #include "sl_si91x_types.h"
 #include "cmsis_os2.h" // CMSIS RTOS2
+#include "socket.h"
+#include "select.h"
 #include "sl_si91x_protocol_types.h"
 
 /**
@@ -166,7 +166,7 @@ typedef void (*sl_si91x_socket_data_transfer_complete_handler_t)(int32_t socket,
  * @return
  *   N/A
  */
-typedef void (*sl_si91x_socket_select_callback_t)(sl_si91x_fd_set *fd_read, sl_si91x_fd_set *fd_write, sl_si91x_fd_set *fd_except, int32_t status);
+typedef void (*sl_si91x_socket_select_callback_t)(fd_set *fd_read, fd_set *fd_write, fd_set *fd_except, int32_t status);
 
 /**
  * @typedef sl_si91x_socket_remote_termination_callback_t
@@ -203,6 +203,12 @@ typedef enum {
   DISCONNECTED // Socket attains this state when underlying connection is lost
 } sli_si91x_bsd_socket_state_t;
 
+/// Internal reasons for SI91x BSD socket disconnection, applicable only when the socket state is DISCONNECTED.
+typedef enum {
+  SLI_SI91X_BSD_DISCONNECT_REASON_INTERFACE_DOWN, // Indicates the connection was lost due to the network interface going down.
+  SLI_SI91X_BSD_DISCONNECT_REASON_REMOTE_CLOSED // Indicates the connection was terminated by the remote endpoint.
+} sli_si91x_bsd_disconnect_reason_t;
+
 #define SI91X_MAX_SIZE_OF_EXTENSION_DATA 256
 
 #pragma pack()
@@ -224,20 +230,22 @@ typedef struct {
 
 /// Internal si91x socket handle
 typedef struct {
-  int32_t id;                                ///< Socket ID
-  int32_t type;                              ///< Socket type
-  int32_t index;                             ///< Socket index
-  int role;                                  ///< Socket role
-  int32_t protocol;                          ///< Protocol
-  uint16_t tcp_keepalive_initial_time;       ///< TCP keepalive intial time
-  uint8_t max_tcp_retries;                   ///< MAX TCOP retries
-  uint16_t read_timeout;                     ///< Read timeout
-  uint8_t certificate_index;                 ///< Certificate Index
-  uint8_t vap_id;                            ///< Virtual AP ID
-  uint16_t mss;                              ///< Maximum segment size (MSS) value
-  struct sockaddr_in6 local_address;         ///< Using sockaddr_in6 to hold either IPV4 or IPV6.
-  struct sockaddr_in6 remote_address;        ///< Using sockaddr_in6 to hold either IPV4 or IPV6.
-  sli_si91x_bsd_socket_state_t state;        ///< BSD socket state (used for internal tracking)
+  int32_t id;                          ///< Socket ID
+  int32_t type;                        ///< Socket type
+  int32_t index;                       ///< Socket index
+  int role;                            ///< Socket role
+  int32_t protocol;                    ///< Protocol
+  uint16_t tcp_keepalive_initial_time; ///< TCP keepalive intial time
+  uint8_t max_tcp_retries;             ///< MAX TCOP retries
+  uint16_t read_timeout;               ///< Read timeout
+  uint8_t certificate_index;           ///< Certificate Index
+  uint8_t vap_id;                      ///< Virtual AP ID
+  uint16_t mss;                        ///< Maximum segment size (MSS) value
+  struct sockaddr_in6 local_address;   ///< Using sockaddr_in6 to hold either IPV4 or IPV6.
+  struct sockaddr_in6 remote_address;  ///< Using sockaddr_in6 to hold either IPV4 or IPV6.
+  sli_si91x_bsd_socket_state_t state;  ///< BSD socket state (used for internal tracking)
+  sli_si91x_bsd_disconnect_reason_t
+    disconnect_reason; ///< BSD socket disconnection reasons, applicable only when the socket state is DISCONNECTED.
   sli_si91x_tls_extensions_t tls_extensions; ///< TLS Extension
   bool is_waiting_on_ack;                    ///< Boolean flag to check if socket is waiting for an ack.
 #if defined(SLI_SI917) || defined(SLI_SI915)

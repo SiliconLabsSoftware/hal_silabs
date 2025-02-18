@@ -34,9 +34,7 @@
 #include "sl_status.h"
 #include "sl_constants.h"
 #include <stdbool.h>
-#if defined(SL_COMPONENT_CATALOG_PRESENT)
 #include "sl_component_catalog.h"
-#endif
 #include "sl_board_configuration.h"
 #include "rsi_rom_clks.h"
 
@@ -62,7 +60,7 @@ void sli_si91x_platform_init(void)
   DWT->CTRL |= 0x1;
 
 #if (configUSE_TICKLESS_IDLE == 0)
-  SysTick_Config(SystemCoreClock / CONFIG_SYS_CLOCK_TICKS_PER_SEC);
+  SysTick_Config(SystemCoreClock / configTICK_RATE_HZ);
   // Set P2P Intr priority
   NVIC_SetPriority(SysTick_IRQn, SYSTICK_INTR_PRI);
 #endif

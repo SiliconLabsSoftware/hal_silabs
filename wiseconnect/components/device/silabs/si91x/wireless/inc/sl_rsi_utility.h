@@ -54,6 +54,19 @@
 #define SI91X_MEDIUM_TRANSMIT_POWER_THRESHOLD 4
 
 /**
+ * @brief Defines the priority level for the event thread.
+ *
+ * This macro sets the priority level for the event thread.
+ * The priority level is set to `osPriorityRealtime1`, which is a real-time priority level.
+ * 
+ * @note
+ * - The priority level of this thread should be highest among all the threads in the system.
+ */
+#ifndef SL_WLAN_EVENT_THREAD_PRIORITY
+#define SL_WLAN_EVENT_THREAD_PRIORITY osPriorityRealtime1
+#endif
+
+/**
  * Stack size of the event handler thread that processes all Wi-Fi and networking callbacks.
  * This value can be overridden by defining a new value for SL_SI91X_EVENT_HANDLER_STACK_SIZE in your project or
  * adding -DSL_SI91X_EVENT_HANDLER_STACK_SIZE=<new value> to your compiler command line options.
@@ -260,13 +273,11 @@ sl_status_t sl_si91x_platform_deinit(void);
 // Event API
 /* Function used to set specified flags for event */
 void sli_si91x_set_event(uint32_t event_mask);
-void sl_si91x_host_set_bus_event(uint32_t event_mask);
 
 /* Function used to set specified flags for async event */
 void sl_si91x_host_set_async_event(uint32_t event_mask);
 
 uint32_t sli_si91x_wait_for_event(uint32_t event_mask, uint32_t timeout);
-uint32_t si91x_host_wait_for_bus_event(uint32_t event_mask, uint32_t timeout);
 
 /* Function used to clear flags for specific event */
 uint32_t sli_si91x_clear_event(uint32_t event_mask);
