@@ -52,3 +52,21 @@ Example usage:
     -o $ZEPHYR_BASE/dts/arm/silabs/ \
     -y $ZEPHYR_BASE/soc/silabs/soc.yml
 ```
+
+### Board Devicetree
+
+Board devicetree is generated using the `gen_dts_board.py` script.
+The script takes the following inputs:
+
+* `sdk` -- Path to Simplicity SDK or boards package to extract data from.
+* `board` -- The board to generate .dts files for.
+* `out` -- The output path.
+
+Example usage:
+
+```sh
+./scripts/gen_dts_board.py \
+    -b xg24_dk2601b \
+    -s ~/sisdk-release/ \
+    -o $ZEPHYR_BASE/boards/silabs/dev_kits/xg24_dk2601b/ 
+```
