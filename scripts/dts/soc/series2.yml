@@ -1,0 +1,359 @@
+configs:
+  - name: xg21
+    families:
+      - name: efr32mg21
+        representative_device: EFR32MG21B020F1024IM32
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg21.c
+  - name: xg22
+    families:
+      - name: efr32bg22
+        representative_device: EFR32BG22C224F512IM40
+      - name: efr32mg22
+      - name: efr32fg22
+      - name: bgm22
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg22.c
+  - name: xg23
+    families:
+      - name: efr32zg23
+        representative_device: EFR32ZG23B021F512IM40
+      - name: efr32fg23
+      - name: efm32pg23
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg23.c
+  - name: xg24
+    families:
+      - name: efr32mg24
+        representative_device: EFR32MG24B220F1536IM48
+      - name: efr32bg24
+      - name: mgm24
+      - name: bgm24
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg24.c
+  - name: xg26
+    families:
+      - name: efr32mg26
+        representative_device: EFR32MG26B521F3200IM68
+      - name: efr32bg26
+      - name: efm32pg26
+      - name: mgm26
+      - name: bgm26
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg26.c
+  - name: xg27
+    families:
+      - name: efr32bg27
+        representative_device: EFR32BG27C140F768IM40
+      - name: efr32mg27
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg27.c
+  - name: xg28
+    families:
+      - name: efr32zg28
+        representative_device: EFR32ZG28B322F1024IM68
+      - name: efr32fg28
+      - name: efm32pg28
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg28.c
+  - name: xg29
+    families:
+      - name: efr32mg29
+        representative_device: EFR32MG29B140F1024IM40
+      - name: efr32bg29
+    clocks: platform/service/device_manager/devices/sl_device_peripheral_hal_efr32xg29.c
+
+
+clocks:
+  skip:
+    - rhclk
+  selection:
+    sysclk: hfrcodpll
+    hclk: sysclk
+    pclk: hclk
+    lspclk: pclk
+    traceclk: # on devices where no clksel field is present
+      - when: [xg21]
+        value: hclk
+      - value: sysclk
+  divider:
+    pclk: 2
+    lspclk: 2
+  extra_children:
+    pclk: [lspclk]
+
+peripherals:
+  - svd: cmu
+    node: clock
+    binding: "silabs,series-clock"
+    include: "zephyr/dt-bindings/clock/silabs/{config}-clock.h"
+    status: okay
+  - svd: fsrco
+    binding: "fixed-clock"
+    properties:
+      clock-frequency: DT_FREQ_M(20)
+  - svd: hfxo\d
+    node: hfxo
+    binding: "silabs,hfxo"
+    labels: ["clk_hfxo", hfxo]
+    properties:
+      clock-frequency: 
+        - when: [xg23, xg24, xg25, xg26, xg28]
+          value: DT_FREQ_M(39)
+        - when: [xg21, xg22, xg27, xg29]
+          value: DT_FREQ_K(38400)
+      ctune: [140]
+      precision: 50
+    status: disabled
+  - svd: lfxo
+    binding: "silabs,series2-lfxo"
+    properties:
+      clock-frequency: 32768
+      ctune: 63
+      precision: 50
+      timeout: 4096
+    status: disabled
+  - svd: hfrco0
+    node: hfrcodpll
+    labels: [hfrcodpll]
+    binding: "silabs,series2-hfrcodpll"
+    properties:
+      clock-frequency: DT_FREQ_M(19)
+  - svd: hfrcoem23
+    binding: "silabs,series2-hfrcoem23"
+    properties:
+      clock-frequency: DT_FREQ_M(19)
+  - svd: lfrco
+    binding: "silabs,series2-lfrco"
+    properties:
+      clock-frequency: 32768
+  - svd: ulfrco
+    binding: "fixed-clock"
+    properties:
+      clock-frequency: 1000
+  - svd: msc
+    node: flash-controller
+    binding: "silabs,series2-flash-controller"
+    chosen: "zephyr,flash-controller"
+    properties:
+      ranges: true
+      '#address-cells': 1
+      '#size-cells': 1
+    children:
+      - node: flash
+        labels: [flash0]
+        binding: "soc-nv-flash"
+        address:
+          cmsis_symbol: memory.flash.base
+        properties:
+          '#address-cells': 1
+          '#size-cells': 1
+          write-block-size: 4
+          erase-block-size:
+            cmsis_symbol: memory.flash.page_size
+  - svd: usart0
+    node: usart
+    binding:
+      - when: [xg22, xg27]
+        value: "silabs,usart-spi"
+      - value: "silabs,usart-uart"
+    status: disabled
+    skip_default_properties: true # Don't emit default properties since user can swap to spi binding
+  # Fallback: use USARTs for UART by default
+  - svd: usart
+    node: usart
+    binding: "silabs,usart-uart"
+    status: disabled
+    skip_default_properties: true # Don't emit default properties since user can swap to spi binding
+  - svd: eusart
+    node: eusart
+    binding: "silabs,eusart-spi"
+    interrupts: ["{peripheral}_rx", "{peripheral}_tx"]
+    status: disabled
+    skip_default_properties: true # Don't emit default properties since user can swap to uart binding
+  - svd: euart
+    node: eusart
+    binding: "silabs,eusart-uart"
+    interrupts: ["{peripheral}_rx", "{peripheral}_tx"]
+    status: disabled
+  - svd: burtc
+    labels: [burtc0]
+    binding: "silabs,burtc-counter"
+    status: disabled
+  - svd: semailbox
+    labels: [se]
+    binding: "silabs,gecko-semailbox"
+    chosen: "zephyr,entropy"
+    interrupts: [setamperhost, "sembrx", "sembtx"]
+    status: disabled
+  - svd: i2c
+    node: i2c
+    binding: "silabs,i2c"
+    include: "zephyr/dt-bindings/i2c/i2c.h"
+    properties:
+      clock-frequency: I2C_BITRATE_STANDARD
+    status: disabled
+  - svd: sysrtc
+    node: sysrtc
+    binding: "silabs,sysrtc"
+    chosen: "silabs,sleeptimer"
+    labels: [sysrtc0]
+    interrupts: [sysrtc_app, sysrtc_seq]
+    status: disabled
+    properties:
+      clock-frequency: 32768
+      prescaler: 1
+  - svd: rtcc
+    node: rtcc
+    binding: "silabs,rtcc"
+    chosen: "silabs,sleeptimer"
+    labels: [rtcc0]
+    status: disabled
+    properties:
+      clock-frequency: 32768
+      prescaler: 1
+  - svd: gpio
+    binding: "silabs,gpio"
+    include: "zephyr/dt-bindings/gpio/gpio.h"
+    properties:
+      ranges: true
+      '#address-cells': 1
+      '#size-cells': 1
+    children:
+      - handler: gpio
+        node: gpio
+        binding: "silabs,gpio-port"
+        properties:
+          gpio-controller: true
+        status: disabled
+    siblings:
+      - handler: pinctrl
+        node: pin-controller
+        binding: "silabs,dbus-pinctrl"
+      - handler: clkin0
+        node: clkin0
+        binding: "fixed-clock"
+        properties:
+          clock-frequency: DT_FREQ_M(38)
+  - svd: ldma$
+    node: dma
+    labels: [dma0]
+    binding: "silabs,ldma"
+    include: "zephyr/dt-bindings/dma/silabs/{config}-dma.h"
+    properties:
+      dma-channels:
+        cmsis_symbol: CH_NUM
+    status: disabled
+  - svd: wdog
+    node: wdog
+    binding: "silabs,gecko-wdog"
+    # TODO: peripheral-id is required since the driver doesn't use clock control
+    status: disabled
+  - svd: iadc
+    node: adc
+    labels: [adc0]
+    binding: "silabs,iadc"
+    include: "zephyr/dt-bindings/adc/adc.h"
+    status: disabled
+  - svd: dcdc
+    binding: "silabs,series2-dcdc"
+    interrupts: [dcdc]
+    status: disabled
+  - svd: acmp
+    node: acmp
+    binding: "silabs,acmp"
+    status: disabled
+  - svd: timer
+    node: timer
+    binding: "silabs,series2-timer"
+    properties:
+      channels:
+        cmsis_symbol: CC_NUM
+      counter-size:
+        cmsis_symbol: CNTWIDTH
+    children:
+      - node: counter
+        binding: "silabs,timer-counter"
+        status: disabled
+      - node: pwm
+        binding: "silabs,timer-pwm"
+        status: disabled
+    status: disabled
+  - svd: letimer
+    node: letimer
+    binding: "silabs,series2-letimer"
+    children:
+      - node: pwm
+        binding: "silabs,letimer-pwm"
+        status: disabled
+    status: disabled
+  - svd: cryptoacc
+    labels: [trng]
+    chosen: "zephyr,entropy"
+    binding: "silabs,gecko-trng"
+    status: disabled
+  - svd: vdac
+    node: vdac
+    binding: "silabs,vdac"
+    status: disabled
+    interrupts: ["{peripheral}"]
+    properties:
+      "#address-cells": 1
+      "#size-cells": 0
+    children:
+      - node: channel
+        reg: [0]
+        reg_format: dec
+      - node: channel
+        reg: [1]
+        reg_format: dec
+  - svd: buram
+    node: retained-memory
+    binding: "silabs,buram"
+    reg_mode: narrow
+    status: disabled
+  - svd: gpcrc
+    labels: [gpcrc]
+    binding: "silabs,gpcrc"
+    chosen: "zephyr,crc"
+    status: okay
+
+
+# skipped peripherals
+  - svd: scratchpad
+    skip: true # unused
+  - svd: emu
+    skip: true # handled by PM subsystem
+  - svd: dpll0
+    skip: true # handled by the HFRCODPLL peripheral
+  - svd: icache0
+    skip: true # configuration not yet exposed in Zephyr
+  - svd: prs
+    skip: true # PRS config is distributed 
+  - svd: ldmaxbar
+    skip: true # handled by the LDMA peripheral
+  - svd: syscfg
+    skip: true # system config is handled by the SoC
+  - svd: hostmailbox
+    skip: true # handled by the radio driver
+  - svd: keyscan
+    skip: true # missing peripheral driver
+  - svd: dmem
+    skip: true # configuration not yet exposed in Zephyr
+  - svd: radioaes
+    skip: true # handled by the radio driver
+  - svd: bufc
+    skip: true # handled by the radio driver
+  - svd: smu
+    skip: true # configuration not yet exposed in Zephyr
+  - svd: pcnt
+    skip: true # missing peripheral driver
+  - svd: mvp
+    skip: true # missing peripheral driver
+  - svd: pdm
+    skip: true # missing peripheral driver
+  - svd: prortc
+    skip: true # handled by the radio driver
+  - svd: lesense
+    skip: true # missing peripheral driver
+  - svd: pfmxpprf
+    skip: true # handled by the DCDC peripheral
+  - svd: lcd
+    skip: true # missing peripheral driver
+  - svd: etampdet
+    skip: true # missing peripheral driver
+  - svd: amuxcp
+    skip: true # infrastructure

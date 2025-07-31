@@ -30,3 +30,25 @@ Devicetree binding headers for Series 2 are generated using the following script
 * Clock Control bindings: `gen_clock_control.py`
 * Pin Control bindings: `gen_pinctrl.py`
 * DAC bindings: `gen_vdac.py`
+
+## Devicetree Files
+
+### SoC Devicetree
+
+SoC devicetree for Series 2 is generated using the `gen_dts_soc_series2.py` script.
+The script takes the following inputs:
+
+* `sdk` -- Path to Simplicity SDK or device package to extract data from.
+* `family` -- The family to generate .dtsi files for.
+* `soc-yml` -- The soc.yml to use for filtering.
+* `out` -- The output path.
+
+Example usage:
+
+```sh
+./scripts/gen_dts_soc_series2.py \
+    -f xg24 \
+    -s ~/sisdk-release/ \
+    -o $ZEPHYR_BASE/dts/arm/silabs/ \
+    -y $ZEPHYR_BASE/soc/silabs/soc.yml
+```
