@@ -3,6 +3,15 @@ build:
   cmake-ext: True
   kconfig-ext: True
 blobs:
+  # libsl_openthread_cm33_gcc
+  - path: simplicity_sdk/protocol/openthread/platform-abstraction/efr32/libsl_openthread_cm33_gcc.a
+    sha256: 1cf533ac53093a0a4f97a92f2845c703913ab6f1153a42bc4ff2b156db442fc0
+    type: lib
+    version: "2025.6.2"
+    license-path: zephyr/blobs/license/Zlib.txt
+    url: https://artifacts.silabs.net/artifactory/gsdk/objects/1c/f5/1cf533ac53093a0a4f97a92f2845c703913ab6f1153a42bc4ff2b156db442fc0
+    description: "OpenThread RAIL library for EFR32"
+    doc-url: https://github.com/SiliconLabs/simplicity_sdk
   # libbluetooth_controller
   - path: simplicity_sdk/protocol/bluetooth/bgstack/ll/build/gcc/xg21/release/liblinklayer.a
     sha256: 450aa880f802b9c65c27562bb393cd3086cca84646b1ab76aee88ef39ce469b1
