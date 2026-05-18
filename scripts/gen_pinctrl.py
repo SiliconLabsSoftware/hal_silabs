@@ -33,6 +33,7 @@ FAMILIES = {
   "xg27": ["efr32mg27", "efr32bg27"],
   "xg28": ["efr32fg28", "efr32sg28", "efr32zg28", "efm32pg28"],
   "xg29": ["efr32bg29", "efr32mg29"],
+  "six301": ["sibg301", "simg301"],
 }
 ABUSES = {
   "xg21": "platform/Device/SiliconLabs/EFR32MG21/Include/efr32mg21_gpio.h",
@@ -44,6 +45,7 @@ ABUSES = {
   "xg27": "platform/Device/SiliconLabs/EFR32BG27/Include/efr32bg27_gpio.h",
   "xg28": "platform/Device/SiliconLabs/EFR32ZG28/Include/efr32zg28_gpio.h",
   "xg29": "platform/Device/SiliconLabs/EFR32BG29/Include/efr32bg29_gpio.h",
+  "six301": "platform/Device/SiliconLabs/SIMG301/Include/simg301_gpio.h",
 }
 
 # Certain peripherals have different names in SVD and Pin Tool data; rename the SVD peripheral
@@ -231,6 +233,7 @@ def write_header(path: Path, family, peripherals: dict, abuses: list) -> None:
   Write DT binding header containing DBUS routing data for pinctrl use
   """
   family_display = re.sub(r"^xg(\d+)$", r"xG\1", family)
+  family_display = re.sub(r"^six(\d+)$", r"Six\1", family_display)
   lines = [
     "/**",
     " * @file",
@@ -369,9 +372,12 @@ def parse_abus(file: Path) -> list:
     "ODD0": 2,
     "ODD1": 3,
   }
-  peripheral_map = {
-    "ADC0": "IADC0",
-  }
+  if file.name.startswith("efr32"):
+    peripheral_map = {
+      "ADC0": "IADC0",
+    }
+  else:
+    peripheral_map = {}
   abuses = []
   with file.open() as f:
     for line in f:

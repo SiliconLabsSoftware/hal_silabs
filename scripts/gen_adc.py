@@ -102,7 +102,18 @@ devices = {
         7: "DECOUPLE"
       }
     }
-  }
+  },
+  "six301": {
+    "bits": "platform/Device/SiliconLabs/SIMG301/Include/simg301_adc.h",
+    "values": {
+      "SUPPLY": {
+        0: "AVDD",
+        1: "IOVDD",
+        2: "DVDD",
+        4: "DECOUPLE",
+      }
+    }
+  },
 }
 
 alias = {
@@ -135,25 +146,30 @@ if __name__ == "__main__":
 
   args.out.mkdir(exist_ok=True)
 
-  values = {}
+  values = {
+    "adc": {},
+    "iadc": {},
+  }
   for device, data_source in devices.items():
     print(f"Parse ADC data for {device}")
 
+    adc_type = Path(data_source["bits"]).stem.split("_")[-1]
+
     with (args.sdk / data_source["bits"]).open() as f:
       for line in f:
-        if m := re.match(r"#define _IADC_SINGLE_PORT(POS|NEG)_([^\s]+)\s+(0x[0-9A-F]*)UL", line):
+        if m := re.match(r"#define _I?ADC_SCAN_PORT(POS|NEG)_([^\s]+)\s+(0x[0-9A-F]*)UL", line):
           port = m.group(2)
           port_base = int(m.group(3), base=16) * 16
           if port in ["MASK", "DEFAULT"]:
              continue
           if port in data_source["values"]:
             for value, key in data_source["values"][port].items():
-              insert(values, key, port_base + value)
+              insert(values[adc_type], key, port_base + value)
           elif port.startswith("PORT"):
             for pin in range(16):
-              insert(values, f"P{port[4]}{pin}", port_base + pin)
+              insert(values[adc_type], f"P{port[4]}{pin}", port_base + pin)
           else:
-            insert(values, alias.get(port,port), port_base)
+            insert(values[adc_type], alias.get(port,port), port_base)
 
   lines = [
     f"#ifndef ZEPHYR_INCLUDE_DT_BINDINGS_ADC_SILABS_ADC_H_",
@@ -161,8 +177,14 @@ if __name__ == "__main__":
     "",
   ]
 
-  max_key = max(len(k) for k in values)
-  for k, v in sorted(values.items(), key=lambda i: (i[1],i[0])):
+  max_key = max(len(k) for k in values["adc"])
+  for k, v in sorted(values["adc"].items(), key=lambda i: (i[1],i[0])):
+    lines.append(f"#define ADC_INPUT_{k}{' ' * (max_key - len(k) + 1)}0x{v:x}")
+
+  lines.append("")
+
+  max_key = max(len(k) for k in values["iadc"])
+  for k, v in sorted(values["iadc"].items(), key=lambda i: (i[1],i[0])):
     lines.append(f"#define IADC_INPUT_{k}{' ' * (max_key - len(k) + 1)}0x{v:x}")
 
   lines.append("")

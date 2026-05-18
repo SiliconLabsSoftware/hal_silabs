@@ -43,6 +43,10 @@ devices = {
       "bits": "platform/Device/SiliconLabs/EFR32BG29/Include/efr32bg29_cmu.h",
       "nodes": "platform/service/device_manager/clocks/sl_device_clock_efr32xg29.c"
   },
+  "six301": {
+      "bits": "platform/Device/SiliconLabs/SIMG301/Include/simg301_cmu.h",
+      "nodes": "platform/service/device_manager/clocks/sl_device_clock_sixx301.c"
+  },
 }
 
 clocks = {

@@ -107,6 +107,13 @@ class Board:
             return vals
         else:
             raise KeyError(f"Tag not found: {key}")
+    
+    def _provides(self, key) -> bool:
+        for p in self._board["provides"]:
+            if p["name"] == key:
+                return True
+
+        return False
 
     @property
     def name(self) -> str:
@@ -118,7 +125,12 @@ class Board:
 
     @property
     def sensors(self) -> list[str]:
-        return self._tag("hardware:has:sensor:", multiple=True)
+        tags = self._tag("hardware:has:sensor:", multiple=True)
+
+        if "si7021" not in tags and self._provides("hardware_board_has_tempsensor"):
+            tags.append("si7021")
+
+        return tags
 
     @property
     def spi_flash(self) -> str | None:

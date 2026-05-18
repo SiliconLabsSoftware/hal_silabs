@@ -50,13 +50,14 @@ def generate(b: Board, dt: Node, pinctrl: Node):
                 joystick.add_node(node)
 
         pin, bus = pin_and_bus(b, "SL_JOYSTICK")
+        adc_peripheral = "IADC0" if b.soc_config.get("device.series") == 2 else "ADC0"
         pins, props = b.pinctrl(
-            "iadc0",
+            adc_peripheral.lower(),
             "default",
             PinctrlGroup(
                 "group0",
                 None,
-                abus=[f"ABUS_{bus}_IADC0"],
+                abus=[f"ABUS_{bus}_{adc_peripheral}"],
             ),
         )
         pinctrl.add_node(pins)

@@ -94,6 +94,8 @@ def main():
     dt.add_string("compatible", f"silabs,{b.id}")
 
     pinctrl = Node(labels=["pinctrl"])
+    include = f"zephyr/dt-bindings/pinctrl/silabs/{b.soc_family}-pinctrl.h"
+    pinctrl.add_include(include)
 
     for _loader, module_name, _is_pkg in pkgutil.iter_modules(dts.board.__path__):
         full_name = f"{dts.board.__name__}.{module_name}"

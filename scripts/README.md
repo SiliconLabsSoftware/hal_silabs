@@ -35,7 +35,7 @@ Devicetree binding headers for Series 2 are generated using the following script
 
 ### SoC Devicetree
 
-SoC devicetree for Series 2 is generated using the `gen_dts_soc_series2.py` script.
+SoC devicetree for Series 2/3 is generated using the `gen_dts_soc.py` script.
 The script takes the following inputs:
 
 * `sdk` -- Path to Simplicity SDK or device package to extract data from.
@@ -46,7 +46,7 @@ The script takes the following inputs:
 Example usage:
 
 ```sh
-./scripts/gen_dts_soc_series2.py \
+./scripts/gen_dts_soc.py \
     -f xg24 \
     -s ~/sisdk-release/ \
     -o $ZEPHYR_BASE/dts/arm/silabs/ \

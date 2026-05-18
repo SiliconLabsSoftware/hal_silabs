@@ -82,7 +82,7 @@ class CmsisDeviceConfig:
 
     def _load_memory_options(self, text):
         memory_opts = re.findall(
-            r"^#define (FLASH|SRAM)_(BASE|(?:PAGE_)?SIZE)\s+\(0x([0-9A-F]+)UL\)",
+            r"^#define (FLASH|SRAM)_(?:S_)?(BASE|(?:PAGE_)?SIZE)\s+\(0x([0-9A-F]+)UL\)",
             text,
             flags=re.MULTILINE,
         )
@@ -154,7 +154,13 @@ def get_device_provides(sdk_path):
         if family not in data[generic_family]:
             data[generic_family][family] = {}
 
-        data[generic_family][family][slcc_id] = provides
+        if "_" in slcc_id and slcc_id.endswith("mb"):
+            slcc_id, _size = slcc_id.split("_")
+        
+        if slcc_id in data[generic_family][family]:
+            data[generic_family][family][slcc_id] = list(set(data[generic_family][family][slcc_id]) | set(provides))
+        else:
+            data[generic_family][family][slcc_id] = provides
 
     return data
 

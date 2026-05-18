@@ -60,6 +60,7 @@ configs:
 clocks:
   skip:
     - rhclk
+    - exportclk
   selection:
     sysclk: hfrcodpll
     hclk: sysclk

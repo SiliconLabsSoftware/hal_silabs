@@ -17,7 +17,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 PIN_TOOL_URL = "https://github.com/SiliconLabs/simplicity_sdk/releases/download/v2025.6.0/pintool.zip"
-CMSIS_PACK_URL = "https://www.silabs.com/documents/public/cmsis-packs/SiliconLabs.GeckoPlatform_{}_DFP.2025.6.0.pack"
+CMSIS_PACK_URL = "https://www.silabs.com/documents/public/cmsis-packs/SiliconLabs.GeckoPlatform_{}_DFP.2025.12.1.pack"
 
 
 def cmsis_pack(path: Path, family: str) -> Path:

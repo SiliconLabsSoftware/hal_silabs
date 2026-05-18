@@ -109,7 +109,7 @@ def generate(b: Board, dt: Node, pinctrl: Node):
         add_cs_gpio(b, peripherals[display]["node"], "SL_MEMLCD_SPI_CS", True)
 
         child = create_on_bus(
-            peripherals[flash]["node"], b.display, compatible="sharp,ls0xx"
+            peripherals[display]["node"], b.display, compatible="sharp,ls0xx"
         )
         child.add_int("height", 128)
         child.add_int("width", 128)
@@ -145,21 +145,25 @@ def generate(b: Board, dt: Node, pinctrl: Node):
         )
 
     for name, data in peripherals.items():
-        pins, props = b.pinctrl(
-            name.lower(),
-            "default",
-            PinctrlGroup(
+        groups = []
+        if data["out_signals"]:
+            groups.append(PinctrlGroup(
                 "group0",
                 data["out_signals"],
                 "drive-push-pull",
                 "output-high",
-            ),
-            PinctrlGroup(
+            ))
+        if data["in_signals"]:
+            groups.append(PinctrlGroup(
                 "group1",
                 data["in_signals"],
                 "input-enable",
                 "silabs,input-filter",
-            ),
+            ))
+        pins, props = b.pinctrl(
+            name.lower(),
+            "default",
+            *groups
         )
         pinctrl.add_node(pins)
         data["node"].add_props(props)

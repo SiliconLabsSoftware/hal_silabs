@@ -9,6 +9,10 @@ def generate(b: Board, dt: Node, pinctrl: Node):
     if b.soc_config.get("device.dcdc") == "BOOST":
         # Boost DCDC is handled at SoC level
         return
+    
+    if b.soc_config.get("device.series") != 2:
+        # DCDC not supported on Series 3
+        return
 
     if b.config.get("SL_DEVICE_INIT_DCDC_ENABLE") in [None, "1"]:
         node = Node(labels=["dcdc"], status="okay")

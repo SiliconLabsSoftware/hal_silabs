@@ -34,6 +34,9 @@ devices = {
   "xg29": {
     "bits": "platform/Device/SiliconLabs/EFR32MG29/Include/efr32mg29_acmp.h",
   },
+  "six301": {
+    "bits": "platform/Device/SiliconLabs/SIMG301/Include/simg301_acmp.h",
+  },
 }
 
 if __name__ == "__main__":

@@ -127,8 +127,12 @@ class SharedConfig:
         self.clocks = util.sdk.get_clock_config(config["clocks"])
         self.families = [FamilyConfig(family) for family in config["families"]]
         for family in self.families:
-            if family.name in provides[f"efr32{self.name}"]:
-                family.provides = provides[f"efr32{self.name}"][family.name]
+            if self.name.startswith("si"):
+                key = self.name.replace("six", "sixx")
+            else:
+                key = f"efr32{self.name}"
+            if family.name in provides[key]:
+                family.provides = provides[key][family.name]
             else:
                 family.provides = provides["mcu"][family.name]
 
