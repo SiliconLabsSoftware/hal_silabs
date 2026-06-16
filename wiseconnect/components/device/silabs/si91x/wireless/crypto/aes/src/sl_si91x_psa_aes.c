@@ -217,6 +217,9 @@ psa_status_t sli_si91x_crypto_cipher_encrypt(const psa_key_attributes_t *attribu
   const uint8_t *aes_iv = NULL;
 
   //! Input check
+  if (input_length > SLI_SI91X_MAX_DATA_SIZE_IN_BYTES_FOR_AES) {
+    return PSA_ERROR_NOT_SUPPORTED;
+  }
   if ((attributes == NULL) || (key_buffer == NULL) || (input == NULL) || (output == NULL) || (output_length == NULL)) {
     return PSA_ERROR_INVALID_ARGUMENT;
   }
@@ -278,6 +281,9 @@ psa_status_t sli_si91x_crypto_cipher_decrypt(const psa_key_attributes_t *attribu
   const uint8_t *aes_iv = NULL;
 
   //! Input pointer check
+  if (input_length > SLI_SI91X_MAX_DATA_SIZE_IN_BYTES_FOR_AES) {
+    return PSA_ERROR_NOT_SUPPORTED;
+  }
   if ((attributes == NULL) || (key_buffer == NULL) || (input == NULL) || (output == NULL) || (output_length == NULL)) {
     return PSA_ERROR_INVALID_ARGUMENT;
   }

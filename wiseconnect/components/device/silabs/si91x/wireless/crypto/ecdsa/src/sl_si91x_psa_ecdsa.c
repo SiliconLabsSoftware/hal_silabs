@@ -121,6 +121,9 @@ psa_status_t sli_si91x_crypto_sign_message(const psa_key_attributes_t *attribute
   psa_status_t status = PSA_ERROR_GENERIC_ERROR;
 
   // Input check
+  if (input_length > SL_SI91X_MAX_DATA_SIZE_IN_BYTES_FOR_ECDSA) {
+    return PSA_ERROR_NOT_SUPPORTED;
+  }
   if (attributes == NULL || key_buffer == NULL || key_buffer_size == 0 || (input == NULL && input_length > 0)
       || signature == NULL || signature_size == 0 || signature_length == NULL) {
     return PSA_ERROR_INVALID_ARGUMENT;
@@ -295,6 +298,9 @@ psa_status_t sli_si91x_crypto_verify_message(const psa_key_attributes_t *attribu
   psa_status_t status = PSA_ERROR_GENERIC_ERROR;
 
   // Input check.
+  if (input_length > SL_SI91X_MAX_DATA_SIZE_IN_BYTES_FOR_ECDSA) {
+    return PSA_ERROR_NOT_SUPPORTED;
+  }
   if (attributes == NULL || key_buffer == NULL || key_buffer_size == 0 || (input == NULL && input_length > 0)
       || signature == NULL) {
     return PSA_ERROR_INVALID_ARGUMENT;

@@ -101,6 +101,9 @@ psa_status_t sli_si91x_crypto_mac_compute(const psa_key_attributes_t *attributes
                                           size_t *mac_length)
 {
 #if defined(SLI_PSA_DRIVER_FEATURE_HMAC) || defined(SLI_PSA_DRIVER_FEATURE_CMAC)
+  if (input_length > SL_SI91X_MAX_DATA_SIZE_IN_BYTES) {
+    return PSA_ERROR_NOT_SUPPORTED;
+  }
 
   if (key_buffer == NULL || attributes == NULL || mac == NULL || mac_length == NULL
       || (input == NULL && input_length != 0)) {

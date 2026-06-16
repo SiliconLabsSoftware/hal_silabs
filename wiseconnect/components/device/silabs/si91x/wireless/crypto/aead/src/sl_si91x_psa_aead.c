@@ -73,13 +73,17 @@
 static psa_status_t sli_si91x_check_aead_parameters(const psa_key_attributes_t *attributes,
                                                     psa_algorithm_t alg,
                                                     size_t nonce_length,
-                                                    size_t additional_data_length)
+                                                    size_t additional_data_length,
+                                                    size_t msg_length)
 {
   size_t tag_length = PSA_AEAD_TAG_LENGTH(psa_get_key_type(attributes), psa_get_key_bits(attributes), alg);
 
   switch (PSA_ALG_AEAD_WITH_SHORTENED_TAG(alg, 0)) {
 #if defined(SLI_PSA_DRIVER_FEATURE_CCM)
     case PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_CCM, 0):
+      if ((msg_length > SLI_SI91X_CCM_MSG_MAX_SIZE) || (additional_data_length > SLI_SI91X_CCM_AD_MAX_SIZE)) {
+        return PSA_ERROR_NOT_SUPPORTED;
+      }
       // verify key type
       if (psa_get_key_type(attributes) != PSA_KEY_TYPE_AES) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -101,6 +105,9 @@ static psa_status_t sli_si91x_check_aead_parameters(const psa_key_attributes_t *
 #endif // SLI_PSA_DRIVER_FEATURE_CCM
 #if defined(SLI_PSA_DRIVER_FEATURE_GCM)
     case PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_GCM, 0):
+      if ((msg_length > SLI_SI91X_GCM_MSG_MAX_SIZE) || (additional_data_length > SLI_SI91X_GCM_AD_MAX_SIZE)) {
+        return PSA_ERROR_NOT_SUPPORTED;
+      }
       // verify key type
       if (psa_get_key_type(attributes) != PSA_KEY_TYPE_AES) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -121,6 +128,9 @@ static psa_status_t sli_si91x_check_aead_parameters(const psa_key_attributes_t *
 #endif // SLI_PSA_DRIVER_FEATURE_GCM
 #if defined(SLI_PSA_DRIVER_FEATURE_CHACHAPOLY)
     case PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_CHACHA20_POLY1305, 0):
+      if ((msg_length > SLI_SI91X_CHACHAPOLY_MSG_MAX_SIZE)) {
+        return PSA_ERROR_NOT_SUPPORTED;
+      }
       // verify key type
       if (psa_get_key_type(attributes) != PSA_KEY_TYPE_CHACHA20) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -286,7 +296,7 @@ psa_status_t sli_si91x_crypto_aead_encrypt(const psa_key_attributes_t *attribute
   }
 
   // Verify that the driver supports the given parameters
-  status = sli_si91x_check_aead_parameters(attributes, alg, nonce_length, additional_data_length);
+  status = sli_si91x_check_aead_parameters(attributes, alg, nonce_length, additional_data_length, plaintext_length);
   if (status != PSA_SUCCESS) {
     return status;
   }
@@ -422,7 +432,7 @@ psa_status_t sli_si91x_crypto_aead_decrypt(const psa_key_attributes_t *attribute
   }
 
   // Verify that the driver supports the given parameters
-  status = sli_si91x_check_aead_parameters(attributes, alg, nonce_length, additional_data_length);
+  status = sli_si91x_check_aead_parameters(attributes, alg, nonce_length, additional_data_length, ciphertext_length);
   if (status != PSA_SUCCESS) {
     return status;
   }
