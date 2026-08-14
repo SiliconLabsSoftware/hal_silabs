@@ -259,7 +259,12 @@ def create_peripheral_nodes(svd, soc, config, peripheral_config):
         p = create_node_from_config(soc, config, cfg, bindings, name, peripheral)
 
         if (clock := config.clocks.get(name)) and name not in ["hfrco0", "socpll0"]:
-            p.add_phandle_array("clocks", ["cmu", clock["clock"], clock["branch"]])
+            p.add_phandle_array("clocks", [["cmu", clock["clock"], clock["branch"]]])
+
+        if "ldma" in name:
+            if clock := config.clocks.get(name.replace("ldma", "ldmaxbar")):
+                p.prop("clocks").value.append(["cmu", clock["clock"], clock["branch"]])
+                p.add_string_array("clock-names", ["ldma", "xbar"])
 
         extra_interrupts = [
             int_name.replace("{peripheral}", name)
