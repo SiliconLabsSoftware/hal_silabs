@@ -9,19 +9,22 @@ configs:
 clocks:
   skip:
     - rhclk
-    - exportclk
     - clkout
   selection:
+    exportclk: sysclk
     sysclk: socpll
     hclk: sysclk
     pclk: hclk
     lspclk: pclk
     hfxo0lfclk: lfrco
+    wdog1clk: hclkdiv1024
   divider:
+    hclk: 1
     pclk: 2
     lspclk: 2
   extra_children:
     pclk: [lspclk]
+    hclk: [wdog1clk]
 
 peripherals:
   - svd: cmu
@@ -29,6 +32,30 @@ peripherals:
     binding: "silabs,series-clock"
     include: "zephyr/dt-bindings/clock/silabs/{config}-clock.h"
     status: okay
+    children:
+      - node: clkout
+        labels: [clkout]
+        binding: "silabs,series-clock-output"
+        properties:
+          '#address-cells': 1
+          '#size-cells': 0
+        status: disabled
+        children:
+        - node: clock-output
+          labels: [clkout0]
+          reg: [0]
+          reg_format: dec
+          status: disabled
+        - node: clock-output
+          labels: [clkout1]
+          reg: [1]
+          reg_format: dec
+          status: disabled
+        - node: clock-output
+          labels: [clkout2]
+          reg: [2]
+          reg_format: dec
+          status: disabled
   - svd: fsrco
     binding: "fixed-clock"
     properties:

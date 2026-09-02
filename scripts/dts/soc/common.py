@@ -217,7 +217,8 @@ def create_clock_nodes(
                         continue
                     for name in [clock_name] + cfg.extra_children.get(clock_name, []):
                         clock_node = ClockNode(name, cfg.selection.get(name))
-                        clock_node.add_int("clock-div", cfg.divider.get(name, 1))
+                        if divider := cfg.divider.get(name):
+                            clock_node.add_int("clock-div", divider)
                         clocks.add_node(clock_node)
 
     # Additional clock nodes that are not directly derived from registers
