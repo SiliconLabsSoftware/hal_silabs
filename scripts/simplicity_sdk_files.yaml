@@ -52,6 +52,23 @@ paths:
       - "platform/service/sleeptimer/config/**/*.h" # TODO
       - "platform/service/sleeptimer/inc/*.h"
       - "platform/service/sleeptimer/src/*.[ch]"
+      # Platform CLI (Zlib). Zephyr Shell owns line editing, so
+      # sl_cli_input.c (echo/history/tab-complete) and the delay,
+      # simple_password, threaded_host headers (unused tick-loop extras)
+      # are intentionally not imported. Zephyr uses Shell + sl_cli_io_zephyr;
+      # no iostream.
+      - "platform/service/cli/inc/sl_cli.h"
+      - "platform/service/cli/inc/sl_cli_arguments.h"
+      - "platform/service/cli/inc/sl_cli_command.h"
+      - "platform/service/cli/inc/sl_cli_input.h"
+      - "platform/service/cli/inc/sl_cli_tokenize.h"
+      - "platform/service/cli/inc/sl_cli_types.h"
+      - "platform/service/cli/config/sl_cli_config.h"
+      - "platform/service/cli/src/sl_cli.c"
+      - "platform/service/cli/src/sl_cli_arguments.c"
+      - "platform/service/cli/src/sl_cli_command.c"
+      - "platform/service/cli/src/sl_cli_tokenize.c"
+      - "platform/service/cli/src/sli_cli_*.h"
       - "platform/service/token_manager/config/sl_token_manager_config.h"
       - "platform/service/token_manager/inc/sl_token_manager_api.h"
       - "platform/service/token_manager/inc/sl_token_manager_defines.h"

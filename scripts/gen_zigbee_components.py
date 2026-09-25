@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import shutil
 import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -44,7 +43,8 @@ EXTERNAL_COMPONENT_DEPENDENCIES = {
 ACTIVE_CONDITION_ALIASES = {
     "btl_app_properties": ("GECKO_BOOTLOADER_INTERFACE",),
     "bootloader_app_properties": ("GECKO_BOOTLOADER_INTERFACE",),
-    "cli": ("CLI",),
+    # Platform CLI catalog from SLCP `cli` / ZIGBEE_CLI seed (see ensure_cli_catalog).
+    "cli": ("CLI", "ZIGBEE_CLI"),
     "device_cortexm": (),
     "device_has_radio": (),
     "device_series_2": (),
@@ -62,7 +62,6 @@ ACTIVE_CONDITION_ALIASES = {
 
 FALSE_CONDITIONS = {
     "bluetooth_stack",
-    "cli",
     "cmsis_rtos2",
     "device_series_3",
     "freertos",
@@ -81,9 +80,11 @@ SKIP_SOURCE_PREFIXES = (
     "stack/internal/src/baremetal/",
 )
 
-# Omit from both module copy and components.cmake.
+# Omit from components.cmake (and from profile file lists).
 SKIP_SOURCES = {
     "app/util/common/app_properties.c",
+    # Zephyr uses modern CTM (sl_zigbee_token.c); legacy needs sl_token_api.h.
+    "stack/platform/sl_zigbee_token_legacy.c",
 }
 
 # Sources owned by one component but gated by another Kconfig.
@@ -271,6 +272,17 @@ def entry_is_enabled(entry: dict, active_catalogs: set[str], active_component_id
     if any(condition_is_true(token, active_catalogs, active_component_ids, index) for token in unless):
         return False
     return True
+
+
+def ensure_cli_catalog(active_catalogs: set[str], active_component_ids: set[str]) -> None:
+    """Ensure SiSDK condition `cli` resolves when regenerating a CLI profile."""
+    if "CLI" in active_catalogs:
+        return
+    if "ZIGBEE_CLI" in active_catalogs or any(
+        cid == "zigbee_cli" or cid.endswith("_cli") for cid in active_component_ids
+    ):
+        active_catalogs.add("CLI")
+        active_catalogs.add("ZIGBEE_CLI")
 
 
 def should_track_requirement(requirement_name: str, index: ComponentIndex) -> bool:
@@ -496,6 +508,7 @@ def collect_component_files(
     index: ComponentIndex,
 ) -> tuple[dict[str, list[str]], dict[str, list[str]], set[str], list[dict]]:
     active_ids = {component.component_id for component in components}
+    ensure_cli_catalog(active_catalogs, active_ids)
     file_manifest: dict[str, list[str]] = {}
     source_manifest: dict[str, list[str]] = {}
     include_dirs: set[str] = {"protocol/zigbee/config"}
@@ -590,27 +603,6 @@ def collect_component_files(
     return file_manifest, source_manifest, include_dirs, unresolved_conditions
 
 
-def copy_component_files(
-    zigbee_root: Path,
-    module_root: Path,
-    file_manifest: dict[str, list[str]],
-) -> list[str]:
-    copied: set[str] = set()
-    destination_root = module_root / "simplicity_sdk/protocol/zigbee"
-
-    for paths in file_manifest.values():
-        for rel_path in paths:
-            src = zigbee_root / rel_path
-            if not src.exists():
-                raise FileNotFoundError(f"Missing Zigbee component file: {src}")
-            dst = destination_root / rel_path
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dst)
-            copied.add(rel_path)
-
-    return sorted(copied)
-
-
 def generate_component_kconfig(
     components: list[Component],
     graph: dict[str, list[str]],
@@ -676,6 +668,23 @@ def generate_component_kconfig(
     return "\n".join(lines)
 
 
+def _emit_cmake_sources(
+    lines: list[str],
+    kconfig_symbol: str,
+    rel_paths: list[str],
+    module_variable: str,
+) -> None:
+    if not rel_paths:
+        return
+    lines.append(f"  zephyr_library_sources_ifdef(CONFIG_{kconfig_symbol}")
+    for rel_path in rel_paths:
+        lines.append(
+            f"    {module_variable}/simplicity_sdk/protocol/zigbee/{rel_path}"
+        )
+    lines.append("  )")
+    lines.append("")
+
+
 def generate_component_cmake(
     source_manifest: dict[str, list[str]],
     include_dirs: set[str],
@@ -683,6 +692,12 @@ def generate_component_cmake(
     module_variable: str = "${ZEPHYR_HAL_SILABS_EXTRA_MODULE_DIR}",
     generated_config_dir: str = "${CMAKE_CURRENT_LIST_DIR}/../config",
 ) -> str:
+    """Emit sources under each component Kconfig.
+
+    SiSDK ``condition: cli`` sources are included in the manifest only when
+    regenerating a CLI profile (see ensure_cli_catalog). They are owned by the
+    parent plugin/component Kconfig — no separate CONFIG_SILABS_SISDK_CLI wrap.
+    """
     lines = [
         "# Copyright (c) 2026 Silicon Laboratories Inc.",
         "# SPDX-License-Identifier: Apache-2.0",
@@ -713,22 +728,10 @@ def generate_component_cmake(
                 override_sources.setdefault(override_symbol, []).append(rel_path)
             else:
                 primary_sources.append(rel_path)
-        if primary_sources:
-            lines.append(f"  zephyr_library_sources_ifdef(CONFIG_{component.kconfig_symbol}")
-            for rel_path in primary_sources:
-                lines.append(
-                    f"    {module_variable}/simplicity_sdk/protocol/zigbee/{rel_path}"
-                )
-            lines.append("  )")
-            lines.append("")
+        _emit_cmake_sources(lines, component.kconfig_symbol, primary_sources, module_variable)
 
     for override_symbol in sorted(override_sources):
-        rel_paths = override_sources[override_symbol]
-        lines.append(f"  zephyr_library_sources_ifdef(CONFIG_{override_symbol}")
-        for rel_path in rel_paths:
-            lines.append(f"    {module_variable}/simplicity_sdk/protocol/zigbee/{rel_path}")
-        lines.append("  )")
-        lines.append("")
+        _emit_cmake_sources(lines, override_symbol, override_sources[override_symbol], module_variable)
 
     lines.append("endif()")
     lines.append("")
@@ -741,6 +744,11 @@ def generate_catalog_translation_headers(components: list[Component]) -> tuple[s
         "#define SL_CATALOG_KCONFIG_TRANSLATION_H",
         "",
         "/* Generated by scripts/gen_zigbee_components.py */",
+        "",
+        "/* Platform CLI (SiSDK condition `cli`); not a Zigbee .slcc catalog. */",
+        "#if defined(CONFIG_SILABS_SISDK_CLI) && CONFIG_SILABS_SISDK_CLI",
+        "#define SL_CATALOG_CLI_PRESENT 1",
+        "#endif",
         "",
     ]
     wrapper_lines = [
@@ -809,7 +817,7 @@ def generate_report(
     membership: dict[str, frozenset[str]],
     sccs: list[list[str]],
     source_manifest: dict[str, list[str]],
-    copied_files: list[str],
+    profile_files: list[str],
     unresolved_conditions: list[dict],
 ) -> str:
     lines = [
@@ -879,9 +887,13 @@ def generate_report(
 
     lines.extend(
         [
-            "## Copied Zigbee Source Files",
+            "## Active Profile Source Files",
             "",
-            f"Total copied files: `{len(copied_files)}`",
+            "Paths selected by the active profile. Add needed entries to "
+            "`simplicity_sdk_files.yaml` (package `zigbee`) and import with "
+            "`update_simplicity_sdk.py`; this script only generates glue.",
+            "",
+            f"Total source files: `{len(profile_files)}`",
             "",
         ]
     )
@@ -917,7 +929,9 @@ def generate_report(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate Zigbee component glue and manifests")
+    parser = argparse.ArgumentParser(
+        description="Generate Zigbee Kconfig/CMake/catalog glue from an .slcp profile. "
+    )
     parser.add_argument("--zigbee-root", type=Path, required=True)
     parser.add_argument(
         "--slcp",
@@ -928,12 +942,6 @@ def main() -> None:
         "--active-catalog-header",
         type=Path,
         help="Optional Studio-generated sl_component_catalog.h (alternative to --slcp).",
-    )
-    parser.add_argument(
-        "--module-root",
-        type=Path,
-        help="Module root that receives copied component source files "
-        "(e.g. zephyr-hal-silabs-extra).",
     )
     parser.add_argument(
         "--zephyr-root",
@@ -951,44 +959,24 @@ def main() -> None:
         help="Optional explicit report path. Defaults under the generated zephyr overlay tree.",
     )
     parser.add_argument(
-        "--no-copy",
-        action="store_true",
-        help="Only emit generated Kconfig/CMake/catalog glue; do not copy sources into --module-root.",
-    )
-    parser.add_argument(
-        "--copy-only",
-        action="store_true",
-        help="Only copy active component sources into --module-root; do not emit overlay glue.",
-    )
-    parser.add_argument(
         "--prj-conf-out",
         type=Path,
         help="Write a Zephyr prj.conf fragment enabling all active component Kconfig symbols.",
     )
     args = parser.parse_args()
 
-    if args.no_copy and args.copy_only:
-        parser.error("--no-copy and --copy-only are mutually exclusive")
-    if not args.no_copy and args.module_root is None:
-        parser.error("--module-root is required unless --no-copy is set")
-    if args.copy_only and args.prj_conf_out is not None:
-        parser.error("--prj-conf-out cannot be used with --copy-only")
     if args.slcp is None and args.active_catalog_header is None:
         parser.error("one of --slcp or --active-catalog-header is required")
     if args.slcp is not None and args.active_catalog_header is not None:
         parser.error("--slcp and --active-catalog-header are mutually exclusive")
+    if args.overlay_root is not None:
+        overlay_root = args.overlay_root.resolve(strict=True)
+    elif args.zephyr_root is not None:
+        overlay_root = (args.zephyr_root.resolve(strict=True) / "modules/hal_silabs").resolve()
+    else:
+        parser.error("one of --zephyr-root or --overlay-root is required")
 
     zigbee_root = args.zigbee_root.resolve(strict=True)
-    module_root = args.module_root.expanduser().resolve() if args.module_root is not None else None
-    overlay_root: Path | None = None
-    if not args.copy_only:
-        if args.overlay_root is not None:
-            overlay_root = args.overlay_root.resolve(strict=True)
-        elif args.zephyr_root is not None:
-            overlay_root = (args.zephyr_root.resolve(strict=True) / "modules/hal_silabs").resolve()
-        else:
-            parser.error("one of --zephyr-root or --overlay-root is required unless --copy-only is set")
-
     index = load_components(zigbee_root)
     if args.slcp is not None:
         components, active_catalogs = collect_active_components_from_slcp(
@@ -998,6 +986,7 @@ def main() -> None:
         active_catalogs = parse_active_catalogs(args.active_catalog_header.resolve(strict=True))
         components = collect_active_components(index, active_catalogs)
     component_map = {component.component_id: component for component in components}
+    ensure_cli_catalog(active_catalogs, set(component_map))
     dependency_graph = build_dependency_graph(components, active_catalogs, index)
     sccs = strongly_connected_components(dependency_graph)
     membership = scc_membership(sccs)
@@ -1007,20 +996,7 @@ def main() -> None:
         active_catalogs,
         index,
     )
-    if args.no_copy:
-        copied_files = sorted(
-            {rel_path for paths in file_manifest.values() for rel_path in paths}
-        )
-    else:
-        module_root.mkdir(parents=True, exist_ok=True)
-        copied_files = copy_component_files(zigbee_root, module_root, file_manifest)
-
-    if args.copy_only:
-        print(
-            f"Copied {len(copied_files)} files for {len(components)} active components "
-            f"into {module_root / 'simplicity_sdk/protocol/zigbee'}"
-        )
-        return
+    profile_files = sorted({rel_path for paths in file_manifest.values() for rel_path in paths})
 
     translation_header, wrapper_header = generate_catalog_translation_headers(components)
     kconfig = generate_component_kconfig(components, dependency_graph, component_map, membership)
@@ -1037,7 +1013,7 @@ def main() -> None:
         membership,
         sccs,
         source_manifest,
-        copied_files,
+        profile_files,
         unresolved_conditions,
     )
 
@@ -1074,12 +1050,12 @@ def main() -> None:
                         )[1],
                         "catalog_values": sorted(component.catalog_values),
                         "source_files": source_manifest[component.component_id],
-                        "copied_files": file_manifest[component.component_id],
+                        "profile_files": file_manifest[component.component_id],
                         "template_functions": extract_template_functions(component),
                     }
                     for component in components
                 ],
-                "copied_files": copied_files,
+                "profile_files": profile_files,
                 "include_dirs": sorted(include_dirs),
                 "dependency_cycles": sccs,
                 "unresolved_conditions": unresolved_conditions,
@@ -1092,6 +1068,8 @@ def main() -> None:
 
     if args.prj_conf_out is not None:
         write_if_changed(args.prj_conf_out.resolve(), generate_prj_conf(components))
+
+    print(f"Generated glue for {len(components)} components under {generated_root}")
 
 
 if __name__ == "__main__":
