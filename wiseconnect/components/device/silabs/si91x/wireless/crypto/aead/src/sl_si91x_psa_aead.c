@@ -449,7 +449,8 @@ psa_status_t sli_si91x_crypto_aead_encrypt(const psa_key_attributes_t *attribute
       uint8_t *gcm_output = ciphertext;
       uint8_t *bounce_buf = NULL;
 
-      if (ciphertext_size < (plaintext_length + SL_SI91X_TAG_SIZE)) {
+      if ((ciphertext_size < (plaintext_length + SL_SI91X_TAG_SIZE))
+          || (((uintptr_t)ciphertext & 0x3U) != 0U)) {
         bounce_buf = (uint8_t *)malloc(plaintext_length + SL_SI91X_TAG_SIZE);
         if (bounce_buf == NULL) {
           return PSA_ERROR_INSUFFICIENT_MEMORY;
@@ -521,8 +522,23 @@ psa_status_t sli_si91x_crypto_aead_encrypt(const psa_key_attributes_t *attribute
       dma.nonce                       = temp_nonce;
       dma.nonce_length                = sizeof(temp_nonce);
 
+      uint8_t *chachapoly_output = ciphertext;
+      uint8_t *bounce_buf = NULL;
+
+      if ((ciphertext_size < (plaintext_length + SL_SI91X_TAG_SIZE))
+          || (((uintptr_t)ciphertext & 0x3U) != 0U)) {
+        bounce_buf = (uint8_t *)malloc(plaintext_length + SL_SI91X_TAG_SIZE);
+        if (bounce_buf == NULL) {
+          return PSA_ERROR_INSUFFICIENT_MEMORY;
+        }
+        chachapoly_output = bounce_buf;
+      }
+
       status = sli_si91x_align_aead_inputs(&dma);
       if (status != PSA_SUCCESS) {
+        if (bounce_buf != NULL) {
+          free(bounce_buf);
+        }
         return status;
       }
 
@@ -538,16 +554,22 @@ psa_status_t sli_si91x_crypto_aead_encrypt(const psa_key_attributes_t *attribute
 
       sli_si91x_set_input_config_chachapoly(attributes, &config_chachapoly, key_buffer);
 
-      /* No staging buffer needed here: shortened tags are rejected for
-       * ChaCha20-Poly1305, so tag_length is always SL_SI91X_TAG_SIZE and the
-       * caller's buffer is already sized for the firmware's full trailer. */
       /* Calling sl_si91x_chachapoly() for CHACHAPOLY encryption */
-      si91x_status = sl_si91x_chachapoly(&config_chachapoly, ciphertext);
+      si91x_status = sl_si91x_chachapoly(&config_chachapoly, chachapoly_output);
 
       /* gets the si91x error codes and returns its equivalent psa_status codes */
       status = convert_si91x_error_code_to_psa_status(si91x_status);
 
       sli_si91x_release_aead_inputs(&dma);
+
+      if (bounce_buf != NULL) {
+        if (status == PSA_SUCCESS) {
+          memcpy(ciphertext, bounce_buf, plaintext_length + tag_length);
+        }
+        mbedtls_platform_zeroize(bounce_buf, plaintext_length + SL_SI91X_TAG_SIZE);
+        free(bounce_buf);
+        bounce_buf = NULL;
+      }
 
       break;
     }
