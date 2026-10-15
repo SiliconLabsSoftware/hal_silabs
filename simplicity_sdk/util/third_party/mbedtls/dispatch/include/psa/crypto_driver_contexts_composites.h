@@ -30,17 +30,13 @@
 #include "psa/crypto_driver_common.h"
 
 /* Include the context structure definitions for the Mbed TLS software drivers */
-#include "mbedtls/private/crypto_builtin_composites.h"
+#include "psa/crypto_builtin_composites.h"
 
 /* Include the context structure definitions for those drivers that were
  * declared during the autogeneration process. */
 
 #if defined(MBEDTLS_TEST_LIBTESTDRIVER1)
-#if defined(TF_PSA_CRYPTO_TEST_LIBTESTDRIVER1)
-#include "mbedtls/private/libtestdriver1-crypto_builtin_composites.h"
-#else
-#include <libtestdriver1/tf-psa-crypto/include/psa/crypto.h>
-#endif
+#include <libtestdriver1/include/psa/crypto.h>
 #endif
 
 #if defined(PSA_CRYPTO_DRIVER_TEST)
@@ -114,6 +110,7 @@ typedef mbedtls_psa_pake_operation_t
 #endif /* PSA_CRYPTO_DRIVER_TEST */
 
 /* Include the context structures for all declared hardware drivers */
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 
 #include "sli_psa_driver_features.h"
 
@@ -140,6 +137,8 @@ typedef mbedtls_psa_pake_operation_t
   #include "sl_si91x_psa_aead.h"
 #endif
 
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS */
+
 /* Define the context to be used for an operation that is executed through the
  * PSA Driver wrapper layer as the union of all possible driver's contexts.
  *
@@ -154,6 +153,7 @@ typedef union {
     mbedtls_transparent_test_driver_mac_operation_t transparent_test_driver_ctx;
     mbedtls_opaque_test_driver_mac_operation_t opaque_test_driver_ctx;
 #endif
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HSE)
 #if !defined(SLI_EXCLUDE_PSA_SE_SYMCRYPTO_DRIVERS)
     sli_se_transparent_mac_operation_t sli_se_transparent_ctx;
@@ -171,6 +171,7 @@ typedef union {
 #if defined(SLI_MBEDTLS_DEVICE_HC)
     sli_hostcrypto_transparent_mac_operation_t sli_hostcrypto_transparent_ctx;
 #endif /* SLI_MBEDTLS_DEVICE_HC */
+#endif
 } psa_driver_mac_context_t;
 
 typedef union {
@@ -179,6 +180,7 @@ typedef union {
 #if defined(PSA_CRYPTO_DRIVER_TEST)
     mbedtls_transparent_test_driver_aead_operation_t transparent_test_driver_ctx;
 #endif
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HSE)
 #if !defined(SLI_EXCLUDE_PSA_SE_SYMCRYPTO_DRIVERS)
     sli_se_transparent_aead_operation_t sli_se_transparent_ctx;
@@ -198,6 +200,7 @@ typedef union {
 #endif /* SLI_MBEDTLS_DEVICE_HC */
 #if defined(SLI_AEAD_DEVICE_SI91X)
     sli_si91x_crypto_aead_operation_t sli_si91x_crypto_aead_ctx;
+#endif
 #endif
 } psa_driver_aead_context_t;
 

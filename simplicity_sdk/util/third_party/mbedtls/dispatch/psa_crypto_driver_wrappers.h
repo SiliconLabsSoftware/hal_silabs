@@ -9,21 +9,16 @@
 
 
 /* BEGIN-common headers */
-#include "tf_psa_crypto_common.h"
+#include "common.h"
 #include "psa_crypto_aead.h"
 #include "psa_crypto_cipher.h"
 #include "psa_crypto_core.h"
 #include "psa_crypto_driver_wrappers_no_static.h"
 #include "psa_crypto_hash.h"
-#include "psa_crypto_xof.h"
 #include "psa_crypto_mac.h"
 #include "psa_crypto_pake.h"
 #include "psa_crypto_rsa.h"
 #include "psa_crypto_slot_management.h"
-
-#if defined(TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED)
-#include "psa_crypto_mldsa.h"
-#endif
 
 #include "mbedtls/platform.h"
 #include "mbedtls/constant_time.h"
@@ -44,10 +39,11 @@
 #endif
 /* Headers for p256 transparent driver */
 #if defined(MBEDTLS_PSA_P256M_DRIVER_ENABLED)
-#include "../drivers/p256-m/p256-m_driver_entrypoints.h"
+#include "../3rdparty/p256-m/p256-m_driver_entrypoints.h"
 
 #endif
 
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 /* SiLabs Driver Headers */
 #include "sli_psa_driver_features.h"
 #include "sli_psa_crypto.h"
@@ -114,6 +110,7 @@
 #ifdef SLI_SECURE_KEY_STORAGE_DEVICE_SI91X
 #include "sl_si91x_psa_wrap.h"
 #endif /* Secure key storage driver **/
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS */
 
 /* END-driver headers */
 
@@ -2739,7 +2736,7 @@ static inline psa_status_t psa_driver_wrapper_hash_compute(
     if( status != PSA_ERROR_NOT_SUPPORTED )
         return( status );
 #endif
-#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
     status = sli_hostcrypto_transparent_hash_compute(
                 alg, input, input_length, hash, hash_size, hash_length );
@@ -2770,7 +2767,7 @@ static inline psa_status_t psa_driver_wrapper_hash_compute(
     if( status != PSA_ERROR_NOT_SUPPORTED )
       return( status );
 #endif
-#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS */
 
     /* If software fallback is compiled in, try fallback */
 #if defined(MBEDTLS_PSA_BUILTIN_HASH)
@@ -2806,7 +2803,7 @@ static inline psa_status_t psa_driver_wrapper_hash_setup(
     if( status != PSA_ERROR_NOT_SUPPORTED )
         return( status );
 #endif
-#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
     status = sli_hostcrypto_transparent_hash_setup(
                 &operation->ctx.sli_hostcrypto_transparent_ctx, alg );
@@ -2888,7 +2885,7 @@ static inline psa_status_t psa_driver_wrapper_hash_clone(
                         &source_operation->ctx.test_driver_ctx,
                         &target_operation->ctx.test_driver_ctx ) );
 #endif
-#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
         case SLI_HOSTCRYPTO_TRANSPARENT_DRIVER_ID:
             target_operation->id = SLI_HOSTCRYPTO_TRANSPARENT_DRIVER_ID;
@@ -2921,7 +2918,7 @@ static inline psa_status_t psa_driver_wrapper_hash_clone(
         case SLI_CRYPTO_SI91X_DRIVER_ID:
             return( PSA_ERROR_NOT_SUPPORTED );
 #endif
-#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS */
         default:
             (void) target_operation;
             return( PSA_ERROR_BAD_STATE );
@@ -2946,7 +2943,7 @@ static inline psa_status_t psa_driver_wrapper_hash_update(
                         &operation->ctx.test_driver_ctx,
                         input, input_length ) );
 #endif
-#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
         case SLI_HOSTCRYPTO_TRANSPARENT_DRIVER_ID:
             return( sli_hostcrypto_transparent_hash_update(
@@ -2976,7 +2973,7 @@ static inline psa_status_t psa_driver_wrapper_hash_update(
             return( sli_si91x_crypto_hash_update(&operation->ctx.sli_si91x_crypto_sha_ctx,
                                                  input, input_length) );
 #endif
-#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS */
         default:
             (void) input;
             (void) input_length;
@@ -3003,7 +3000,7 @@ static inline psa_status_t psa_driver_wrapper_hash_finish(
                         &operation->ctx.test_driver_ctx,
                         hash, hash_size, hash_length ) );
 #endif
-#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
         case SLI_HOSTCRYPTO_TRANSPARENT_DRIVER_ID:
             return( sli_hostcrypto_transparent_hash_finish(
@@ -3033,7 +3030,7 @@ static inline psa_status_t psa_driver_wrapper_hash_finish(
             return ( sli_si91x_crypto_hash_finish(&operation->ctx.sli_si91x_crypto_sha_ctx,
                                           hash, hash_size, hash_length ) );
 #endif
-#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS */
         default:
             (void) hash;
             (void) hash_size;
@@ -3056,7 +3053,7 @@ static inline psa_status_t psa_driver_wrapper_hash_abort(
             return( mbedtls_test_transparent_hash_abort(
                         &operation->ctx.test_driver_ctx ) );
 #endif
-#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
         case SLI_HOSTCRYPTO_TRANSPARENT_DRIVER_ID:
             return( sli_hostcrypto_transparent_hash_abort(
@@ -3081,145 +3078,12 @@ static inline psa_status_t psa_driver_wrapper_hash_abort(
         case SLI_CRYPTO_SI91X_DRIVER_ID:
             return( sli_si91x_crypto_hash_abort(&operation->ctx.sli_si91x_crypto_sha_ctx ) );
 #endif
-#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS */
         default:
             return( PSA_ERROR_BAD_STATE );
     }
 }
 
-/*
- * XOF functions
- */
-static inline psa_status_t psa_driver_wrapper_xof_setup(
-    psa_xof_operation_t *operation,
-    psa_algorithm_t alg )
-{
-    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-
-    /* Try setup on accelerators first */
-#if defined(PSA_CRYPTO_DRIVER_TEST)
-    status = mbedtls_test_transparent_xof_setup(
-                &operation->ctx.test_driver_ctx, alg );
-    if( status == PSA_SUCCESS )
-        operation->id = MBEDTLS_TEST_TRANSPARENT_DRIVER_ID;
-
-    if( status != PSA_ERROR_NOT_SUPPORTED )
-        return( status );
-#endif
-
-    /* If software fallback is compiled in, try fallback */
-#if defined(MBEDTLS_PSA_BUILTIN_XOF)
-    status = mbedtls_psa_xof_setup( &operation->ctx.mbedtls_ctx, alg );
-    if( status == PSA_SUCCESS )
-        operation->id = PSA_CRYPTO_MBED_TLS_DRIVER_ID;
-
-    if( status != PSA_ERROR_NOT_SUPPORTED )
-        return( status );
-#endif
-    /* Nothing left to try if we fall through here */
-    (void) status;
-    (void) operation;
-    (void) alg;
-    return( PSA_ERROR_NOT_SUPPORTED );
-}
-
-static inline psa_status_t psa_driver_wrapper_xof_set_context(
-    psa_xof_operation_t *operation,
-    const uint8_t *context,
-    size_t context_length )
-{
-    switch( operation->id )
-    {
-#if defined(MBEDTLS_PSA_BUILTIN_XOF)
-        case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
-            return( mbedtls_psa_xof_set_context( &operation->ctx.mbedtls_ctx,
-                                                 context, context_length ) );
-#endif
-#if defined(PSA_CRYPTO_DRIVER_TEST)
-        case MBEDTLS_TEST_TRANSPARENT_DRIVER_ID:
-            return( mbedtls_test_transparent_xof_set_context(
-                        &operation->ctx.test_driver_ctx,
-                        context, context_length ) );
-#endif
-        default:
-            (void) context;
-            (void) context_length;
-            return( PSA_ERROR_BAD_STATE );
-    }
-}
-
-static inline psa_status_t psa_driver_wrapper_xof_update(
-    psa_xof_operation_t *operation,
-    const uint8_t *input,
-    size_t input_length )
-{
-    switch( operation->id )
-    {
-#if defined(MBEDTLS_PSA_BUILTIN_XOF)
-        case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
-            return( mbedtls_psa_xof_update( &operation->ctx.mbedtls_ctx,
-                                            input, input_length ) );
-#endif
-#if defined(PSA_CRYPTO_DRIVER_TEST)
-        case MBEDTLS_TEST_TRANSPARENT_DRIVER_ID:
-            return( mbedtls_test_transparent_xof_update(
-                        &operation->ctx.test_driver_ctx,
-                        input, input_length ) );
-#endif
-        default:
-            (void) input;
-            (void) input_length;
-            return( PSA_ERROR_BAD_STATE );
-    }
-}
-
-static inline psa_status_t psa_driver_wrapper_xof_output(
-    psa_xof_operation_t *operation,
-    uint8_t *output,
-    size_t output_length )
-{
-    switch( operation->id )
-    {
-#if defined(MBEDTLS_PSA_BUILTIN_XOF)
-        case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
-            return( mbedtls_psa_xof_output( &operation->ctx.mbedtls_ctx,
-                                            output, output_length ) );
-#endif
-#if defined(PSA_CRYPTO_DRIVER_TEST)
-        case MBEDTLS_TEST_TRANSPARENT_DRIVER_ID:
-            return( mbedtls_test_transparent_xof_output(
-                        &operation->ctx.test_driver_ctx,
-                        output, output_length ) );
-#endif
-        default:
-            (void) output;
-            (void) output_length;
-            return( PSA_ERROR_BAD_STATE );
-    }
-}
-
-static inline psa_status_t psa_driver_wrapper_xof_abort(
-    psa_xof_operation_t *operation )
-{
-    switch( operation->id )
-    {
-#if defined(MBEDTLS_PSA_BUILTIN_XOF)
-        case PSA_CRYPTO_MBED_TLS_DRIVER_ID:
-            return( mbedtls_psa_xof_abort( &operation->ctx.mbedtls_ctx ) );
-#endif
-#if defined(PSA_CRYPTO_DRIVER_TEST)
-        case MBEDTLS_TEST_TRANSPARENT_DRIVER_ID:
-            return( mbedtls_test_transparent_xof_abort(
-                        &operation->ctx.test_driver_ctx ) );
-#endif
-        default:
-            return( PSA_ERROR_BAD_STATE );
-    }
-}
-
-/*
- * AEAD functions
- */
 static inline psa_status_t psa_driver_wrapper_aead_encrypt(
     const psa_key_attributes_t *attributes,
     const uint8_t *key_buffer, size_t key_buffer_size,
@@ -3317,7 +3181,6 @@ static inline psa_status_t psa_driver_wrapper_aead_encrypt(
 #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
 
             /* Fell through, meaning no accelerator supports this operation */
-#if defined(MBEDTLS_PSA_BUILTIN_AEAD)
             return( mbedtls_psa_aead_encrypt(
                         attributes, key_buffer, key_buffer_size,
                         alg,
@@ -3325,9 +3188,6 @@ static inline psa_status_t psa_driver_wrapper_aead_encrypt(
                         additional_data, additional_data_length,
                         plaintext, plaintext_length,
                         ciphertext, ciphertext_size, ciphertext_length ) );
-#else
-            return( PSA_ERROR_NOT_SUPPORTED );
-#endif
 
 #if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
@@ -3399,12 +3259,6 @@ static inline psa_status_t psa_driver_wrapper_aead_encrypt(
         default:
             /* Key is declared with a lifetime not known to us */
             (void)status;
-            (void) key_buffer; (void) key_buffer_size;
-            (void) alg;
-            (void) nonce; (void) nonce_length;
-            (void) additional_data; (void) additional_data_length;
-            (void) plaintext; (void) plaintext_length;
-            (void) ciphertext; (void) ciphertext_size; (void) ciphertext_length;
             return( PSA_ERROR_INVALID_ARGUMENT );
     }
 }
@@ -3506,7 +3360,6 @@ static inline psa_status_t psa_driver_wrapper_aead_decrypt(
 #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
 
             /* Fell through, meaning no accelerator supports this operation */
-#if defined(MBEDTLS_PSA_BUILTIN_AEAD)
             return( mbedtls_psa_aead_decrypt(
                         attributes, key_buffer, key_buffer_size,
                         alg,
@@ -3514,9 +3367,6 @@ static inline psa_status_t psa_driver_wrapper_aead_decrypt(
                         additional_data, additional_data_length,
                         ciphertext, ciphertext_length,
                         plaintext, plaintext_size, plaintext_length ) );
-#else
-            return( PSA_ERROR_NOT_SUPPORTED );
-#endif
 
 #if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
 #if defined(SLI_MBEDTLS_DEVICE_HC)
@@ -3588,12 +3438,6 @@ static inline psa_status_t psa_driver_wrapper_aead_decrypt(
         default:
             /* Key is declared with a lifetime not known to us */
             (void)status;
-            (void) key_buffer; (void) key_buffer_size;
-            (void) alg;
-            (void) nonce; (void) nonce_length;
-            (void) additional_data; (void) additional_data_length;
-            (void) ciphertext; (void) ciphertext_length;
-            (void) plaintext; (void) plaintext_size; (void) plaintext_length;
             return( PSA_ERROR_INVALID_ARGUMENT );
     }
 }
@@ -5499,7 +5343,7 @@ static inline psa_status_t psa_driver_wrapper_pake_input(
     }
 }
 
-static inline psa_status_t psa_driver_wrapper_pake_get_shared_key(
+static inline psa_status_t psa_driver_wrapper_pake_get_implicit_key(
     psa_pake_operation_t *operation,
     uint8_t *output, size_t output_size,
     size_t *output_length )
