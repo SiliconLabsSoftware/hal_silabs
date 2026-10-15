@@ -37,9 +37,7 @@
 #ifdef DEBUG_UART
 #include "rsi_debug.h"
 #endif
-#if defined(SL_COMPONENT_CATALOG_PRESENT)
 #include "sl_component_catalog.h"
-#endif
 
 #if defined(SLI_WIRELESS_COMPONENT_PRESENT) && (SLI_WIRELESS_COMPONENT_PRESENT == 1)
 #include "rsi_m4.h"
