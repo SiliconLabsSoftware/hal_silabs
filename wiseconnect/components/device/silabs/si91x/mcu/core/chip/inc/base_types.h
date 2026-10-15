@@ -188,6 +188,30 @@ typedef struct _RSI_DRIVER_VERSION {
 #endif
 #endif
 
+/**
+ * @brief Force the compiler to inline a function.
+ *
+ * Time-critical `STATIC INLINE` helpers are only hinted to inline; the
+ * compiler (especially under LTO) may still generate them out-of-line as
+ * standalone functions. In PSRAM builds the linker can then place those
+ * out-of-line copies in PSRAM, so they are executed from PSRAM during
+ * sleep/wake-up when QSPI/PSRAM is slow or not yet available, which breaks
+ * timing and power-state handling. Forced inlining guarantees that the code is generated directly
+ * into the calling function (internal RAM/flash text) and never relocated into
+ * PSRAM.
+ *
+ * Kept behind a portable macro so non-GNU toolchains stay source-compatible.
+ */
+#ifndef SL_SI91X_ATTRIBUTE_ALWAYS_INLINE
+#if defined(__GNUC__) || defined(__clang__)
+#define SL_SI91X_ATTRIBUTE_ALWAYS_INLINE __attribute__((always_inline))
+#elif defined(__CC_ARM)
+#define SL_SI91X_ATTRIBUTE_ALWAYS_INLINE __forceinline
+#else
+#define SL_SI91X_ATTRIBUTE_ALWAYS_INLINE
+#endif
+#endif
+
 #define ENABLE  1
 #define DISABLE 0
 

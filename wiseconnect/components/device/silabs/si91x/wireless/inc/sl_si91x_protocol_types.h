@@ -1003,12 +1003,11 @@ typedef enum {
 
 ///  M4 and NWP secure handshake request structure.
 typedef struct {
-  sl_si91x_ta_m4_commands_t
-    sub_cmd; ///< sub_cmd form the  enum ta_m4_commands_e(Main command type is RSI_COMMON_REQ_TA_M4_COMMANDS)
+  uint8_t sub_cmd; ///< sub_cmd from @ref sl_si91x_ta_m4_commands_t (main command is SLI_COMMON_REQ_TA_M4_COMMANDS)
   uint8_t input_data_size; ///< length of input_data
   uint8_t input_data
-    []; ///< // Input data. In this input data first byte is reserved for enable(1) or Disable(0) sub_cmd of this structure.
-} sli_si91x_ta_m4_handshake_parameters_t;
+    []; ///< Input data. The first byte of the input data is reserved for enable(1) or Disable(0) sub_cmd of the structure.
+} SL_ATTRIBUTE_PACKED sli_si91x_ta_m4_handshake_parameters_t;
 #endif
 
 #ifdef SLI_SI91X_MCU_INTERFACE

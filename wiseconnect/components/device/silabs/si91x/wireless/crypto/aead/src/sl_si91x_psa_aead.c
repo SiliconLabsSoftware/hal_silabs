@@ -53,7 +53,110 @@
 #include "sl_constants.h"
 #include "sl_si91x_protocol_types.h"
 #include "sl_si91x_driver.h"
+#include "mbedtls/constant_time.h"
+#include "mbedtls/platform_util.h"
 #include <string.h>
+
+#if defined(SLI_PSA_DRIVER_FEATURE_GCM) || defined(SLI_PSA_DRIVER_FEATURE_CHACHAPOLY)
+
+/** Word-aligned views of the caller buffers handed to the firmware. */
+typedef struct {
+  const uint8_t *msg; ///< In: caller buffer. Out: word-aligned view of it.
+  size_t msg_length;
+  const uint8_t *ad;
+  size_t ad_length;
+  const uint8_t *nonce;
+  size_t nonce_length;
+  uint8_t *msg_copy; ///< Backing allocations, NULL when none was required.
+  uint8_t *ad_copy;
+  uint8_t *nonce_copy;
+} sli_si91x_aead_dma_inputs_t;
+
+/**
+ * \brief Provide a word-aligned view of one caller buffer.
+ *
+ * In side-band mode the request carries raw host pointers that the NWP
+ * dereferences to DMA out of M4 memory, so a misaligned caller buffer reaches
+ * the hardware directly. The normal path memcpy's every buffer into the
+ * command packet, so this collapses to a no-op there.
+ *
+ * \param[in,out] buf     On entry the caller buffer, on return the aligned view.
+ * \param         length  Number of bytes the firmware will read.
+ * \param[out]    copy    Receives the backing allocation, or NULL if none.
+ *
+ * \return PSA_SUCCESS, or PSA_ERROR_INSUFFICIENT_MEMORY.
+ */
+static psa_status_t sli_si91x_align_one_input(const uint8_t **buf, size_t length, uint8_t **copy)
+{
+  *copy = NULL;
+
+#ifdef SL_SI91X_SIDE_BAND_CRYPTO
+  if ((*buf == NULL) || (length == 0) || (((uintptr_t)*buf & 0x3u) == 0u)) {
+    return PSA_SUCCESS;
+  }
+
+  *copy = (uint8_t *)malloc(length);
+  if (*copy == NULL) {
+    return PSA_ERROR_INSUFFICIENT_MEMORY;
+  }
+  memcpy(*copy, *buf, length);
+  *buf = *copy;
+#else
+  UNUSED_PARAMETER(buf);
+  UNUSED_PARAMETER(length);
+#endif
+  return PSA_SUCCESS;
+}
+
+/**
+ * \brief Release any allocations made by sli_si91x_align_aead_inputs().
+ *
+ * Safe to call on a zero-initialised or already-released structure.
+ */
+static void sli_si91x_release_aead_inputs(sli_si91x_aead_dma_inputs_t *in)
+{
+  if (in->msg_copy != NULL) {
+    mbedtls_platform_zeroize(in->msg_copy, in->msg_length);
+    free(in->msg_copy);
+    in->msg_copy = NULL;
+  }
+  if (in->ad_copy != NULL) {
+    mbedtls_platform_zeroize(in->ad_copy, in->ad_length);
+    free(in->ad_copy);
+    in->ad_copy = NULL;
+  }
+  if (in->nonce_copy != NULL) {
+    mbedtls_platform_zeroize(in->nonce_copy, in->nonce_length);
+    free(in->nonce_copy);
+    in->nonce_copy = NULL;
+  }
+}
+
+/**
+ * \brief Align every caller buffer the firmware reads by pointer.
+ *
+ * On failure all partial allocations are released before returning, so the
+ * caller only needs to release on the success path.
+ *
+ * \return PSA_SUCCESS, or PSA_ERROR_INSUFFICIENT_MEMORY.
+ */
+static psa_status_t sli_si91x_align_aead_inputs(sli_si91x_aead_dma_inputs_t *in)
+{
+  psa_status_t status = sli_si91x_align_one_input(&in->msg, in->msg_length, &in->msg_copy);
+
+  if (status == PSA_SUCCESS) {
+    status = sli_si91x_align_one_input(&in->ad, in->ad_length, &in->ad_copy);
+  }
+  if (status == PSA_SUCCESS) {
+    status = sli_si91x_align_one_input(&in->nonce, in->nonce_length, &in->nonce_copy);
+  }
+  if (status != PSA_SUCCESS) {
+    sli_si91x_release_aead_inputs(in);
+  }
+  return status;
+}
+
+#endif /* SLI_PSA_DRIVER_FEATURE_GCM || SLI_PSA_DRIVER_FEATURE_CHACHAPOLY */
 
 /**
  * \brief Verify the parameters of authenticated encryption and decryption operations.
@@ -336,26 +439,71 @@ psa_status_t sli_si91x_crypto_aead_encrypt(const psa_key_attributes_t *attribute
 #endif /* SLI_PSA_DRIVER_FEATURE_CCM */
 #if defined(SLI_PSA_DRIVER_FEATURE_GCM)
     case PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_GCM, 0): {
+      /* The firmware always appends a full SL_SI91X_TAG_SIZE tag after the
+       * ciphertext, even when the algorithm asks for a shortened tag. Writing
+       * straight into the caller's buffer would overrun it by
+       * (SL_SI91X_TAG_SIZE - tag_length) bytes, so stage the output whenever
+       * the caller's buffer cannot hold the full tag. A caller sizing its
+       * buffer with PSA_AEAD_ENCRYPT_OUTPUT_SIZE and the default 16-byte tag
+       * lands in the common case and needs no staging buffer. */
+      uint8_t *gcm_output = ciphertext;
+      uint8_t *bounce_buf = NULL;
+
+      if (ciphertext_size < (plaintext_length + SL_SI91X_TAG_SIZE)) {
+        bounce_buf = (uint8_t *)malloc(plaintext_length + SL_SI91X_TAG_SIZE);
+        if (bounce_buf == NULL) {
+          return PSA_ERROR_INSUFFICIENT_MEMORY;
+        }
+        gcm_output = bounce_buf;
+      }
+
+      sli_si91x_aead_dma_inputs_t dma = { 0 };
+      dma.msg                         = plaintext;
+      dma.msg_length                  = plaintext_length;
+      dma.ad                          = additional_data;
+      dma.ad_length                   = additional_data_length;
+      dma.nonce                       = nonce;
+      dma.nonce_length                = nonce_length;
+
+      status = sli_si91x_align_aead_inputs(&dma);
+      if (status != PSA_SUCCESS) {
+        if (bounce_buf != NULL) {
+          free(bounce_buf);
+        }
+        return status;
+      }
+
       sl_si91x_gcm_config_t config_gcm;
       config_gcm.encrypt_decrypt = SL_SI91X_GCM_ENCRYPT;
       config_gcm.dma_use         = SL_SI91X_GCM_DMA_ENABLE;
-      config_gcm.msg             = plaintext;
+      config_gcm.msg             = dma.msg;
       config_gcm.msg_length      = plaintext_length;
-      config_gcm.nonce           = nonce;
+      config_gcm.nonce           = dma.nonce;
       config_gcm.nonce_length    = nonce_length;
-      config_gcm.ad              = additional_data;
+      config_gcm.ad              = dma.ad;
       config_gcm.ad_length       = additional_data_length;
 
       sli_si91x_set_input_config_gcm(attributes, &config_gcm, key_buffer, key_buffer_size);
 
       /* Calling sl_si91x_gcm() for GCM encryption */
-      si91x_status = sl_si91x_gcm(&config_gcm, ciphertext);
+      si91x_status = sl_si91x_gcm(&config_gcm, gcm_output);
 
 #if !defined(SLI_SI917B0)
       free(config_gcm.key_config.a0.key);
 #endif
       /* gets the si91x error codes and returns its equivalent psa_status codes */
       status = convert_si91x_error_code_to_psa_status(si91x_status);
+
+      sli_si91x_release_aead_inputs(&dma);
+
+      if (bounce_buf != NULL) {
+        if (status == PSA_SUCCESS) {
+          memcpy(ciphertext, bounce_buf, plaintext_length + tag_length);
+        }
+        mbedtls_platform_zeroize(bounce_buf, plaintext_length + SL_SI91X_TAG_SIZE);
+        free(bounce_buf);
+        bounce_buf = NULL;
+      }
 
       break;
     }
@@ -365,23 +513,41 @@ psa_status_t sli_si91x_crypto_aead_encrypt(const psa_key_attributes_t *attribute
       uint8_t temp_nonce[16] = { 0 };
       temp_nonce[0]          = 0x01;
       memcpy(temp_nonce + 4, nonce, 12);
+      sli_si91x_aead_dma_inputs_t dma = { 0 };
+      dma.msg                         = plaintext;
+      dma.msg_length                  = plaintext_length;
+      dma.ad                          = additional_data;
+      dma.ad_length                   = additional_data_length;
+      dma.nonce                       = temp_nonce;
+      dma.nonce_length                = sizeof(temp_nonce);
+
+      status = sli_si91x_align_aead_inputs(&dma);
+      if (status != PSA_SUCCESS) {
+        return status;
+      }
+
       sl_si91x_chachapoly_config_t config_chachapoly;
       config_chachapoly.encrypt_decrypt = SL_SI91X_CHACHAPOLY_ENCRYPT;
       config_chachapoly.dma_use         = SL_SI91X_CHACHAPOLY_DMA_ENABLE;
       config_chachapoly.chachapoly_mode = SL_SI91X_CHACHA20POLY1305_MODE;
-      config_chachapoly.msg             = plaintext;
+      config_chachapoly.msg             = dma.msg;
       config_chachapoly.msg_length      = plaintext_length;
-      config_chachapoly.nonce           = temp_nonce;
-      config_chachapoly.ad              = additional_data;
+      config_chachapoly.nonce           = dma.nonce;
+      config_chachapoly.ad              = dma.ad;
       config_chachapoly.ad_length       = additional_data_length;
 
       sli_si91x_set_input_config_chachapoly(attributes, &config_chachapoly, key_buffer);
 
+      /* No staging buffer needed here: shortened tags are rejected for
+       * ChaCha20-Poly1305, so tag_length is always SL_SI91X_TAG_SIZE and the
+       * caller's buffer is already sized for the firmware's full trailer. */
       /* Calling sl_si91x_chachapoly() for CHACHAPOLY encryption */
       si91x_status = sl_si91x_chachapoly(&config_chachapoly, ciphertext);
 
       /* gets the si91x error codes and returns its equivalent psa_status codes */
       status = convert_si91x_error_code_to_psa_status(si91x_status);
+
+      sli_si91x_release_aead_inputs(&dma);
 
       break;
     }
@@ -439,6 +605,11 @@ psa_status_t sli_si91x_crypto_aead_decrypt(const psa_key_attributes_t *attribute
   size_t key_bits         = psa_get_key_bits(attributes);
   uint8_t tag_length      = PSA_AEAD_TAG_LENGTH(key_type, key_bits, alg);
 
+  // The ciphertext must at least carry the authentication tag.
+  if (ciphertext_length < tag_length) {
+    return PSA_ERROR_INVALID_ARGUMENT;
+  }
+
   // Check sufficient output buffer size.
   if (plaintext_size < (ciphertext_length - tag_length)) {
     return PSA_ERROR_BUFFER_TOO_SMALL;
@@ -473,25 +644,77 @@ psa_status_t sli_si91x_crypto_aead_decrypt(const psa_key_attributes_t *attribute
 #endif /* SLI_PSA_DRIVER_FEATURE_CCM */
 #if defined(SLI_PSA_DRIVER_FEATURE_GCM)
     case PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_GCM, 0): {
+      size_t msg_length = ciphertext_length - tag_length;
+
+      /* GCM firmware does not verify the tag: it recomputes it and appends a
+       * full SL_SI91X_TAG_SIZE tag after the plaintext. The caller's buffer is
+       * only required to hold msg_length bytes, so the firmware writes into a
+       * staging buffer instead. The plaintext is copied out only once the tag
+       * has been authenticated, which also keeps the tag out of the caller's
+       * buffer entirely. */
+      uint8_t *gcm_output = (uint8_t *)malloc(msg_length + SL_SI91X_TAG_SIZE);
+      if (gcm_output == NULL) {
+        return PSA_ERROR_INSUFFICIENT_MEMORY;
+      }
+
+      /* Take a copy of the expected tag up front: PSA allows in-place
+       * decryption, in which case the caller's plaintext buffer aliases the
+       * ciphertext. */
+      uint8_t expected_tag[SLI_SI91X_AEAD_TAG_MAX_SIZE];
+      memcpy(expected_tag, ciphertext + msg_length, tag_length);
+
+      sli_si91x_aead_dma_inputs_t dma = { 0 };
+      dma.msg                         = ciphertext;
+      dma.msg_length                  = msg_length;
+      dma.ad                          = additional_data;
+      dma.ad_length                   = additional_data_length;
+      dma.nonce                       = nonce;
+      dma.nonce_length                = nonce_length;
+
+      status = sli_si91x_align_aead_inputs(&dma);
+      if (status != PSA_SUCCESS) {
+        free(gcm_output);
+        return status;
+      }
+
+      /* The staging buffer is output-only; the firmware still reads the
+       * ciphertext from a separate buffer, so input and output never
+       * alias. */
       sl_si91x_gcm_config_t config_gcm = { 0 };
       config_gcm.encrypt_decrypt       = SL_SI91X_GCM_DECRYPT;
       config_gcm.dma_use               = SL_SI91X_GCM_DMA_ENABLE;
-      config_gcm.msg                   = ciphertext;
-      config_gcm.msg_length            = ciphertext_length - tag_length;
-      config_gcm.nonce                 = nonce;
+      config_gcm.msg                   = dma.msg;
+      config_gcm.msg_length            = msg_length;
+      config_gcm.nonce                 = dma.nonce;
       config_gcm.nonce_length          = nonce_length;
-      config_gcm.ad                    = additional_data;
+      config_gcm.ad                    = dma.ad;
       config_gcm.ad_length             = additional_data_length;
 
       sli_si91x_set_input_config_gcm(attributes, &config_gcm, key_buffer, key_buffer_size);
 
       /* Calling sl_si91x_gcm() for GCM decryption */
-      si91x_status = sl_si91x_gcm(&config_gcm, plaintext);
+      si91x_status = sl_si91x_gcm(&config_gcm, gcm_output);
 
 #if !defined(SLI_SI917B0)
       free(config_gcm.key_config.a0.key);
 #endif
       status = convert_si91x_error_code_to_psa_status(si91x_status);
+
+      sli_si91x_release_aead_inputs(&dma);
+
+      /* Authenticate before releasing any plaintext to the caller. */
+      if (status == PSA_SUCCESS) {
+        if (mbedtls_ct_memcmp(gcm_output + msg_length, expected_tag, tag_length) != 0) {
+          status = PSA_ERROR_INVALID_SIGNATURE;
+        } else if ((plaintext != NULL) && (msg_length > 0)) {
+          memcpy(plaintext, gcm_output, msg_length);
+        }
+      }
+      mbedtls_platform_zeroize(expected_tag, sizeof(expected_tag));
+      mbedtls_platform_zeroize(gcm_output, msg_length + SL_SI91X_TAG_SIZE);
+      free(gcm_output);
+      gcm_output = NULL;
+
       break;
     }
 #endif /* SLI_PSA_DRIVER_FEATURE_GCM */
@@ -501,22 +724,66 @@ psa_status_t sli_si91x_crypto_aead_decrypt(const psa_key_attributes_t *attribute
       temp_nonce[0]          = 0x01;
       memcpy(temp_nonce + 4, nonce, 12);
       sl_si91x_chachapoly_config_t config_chachapoly;
+      size_t msg_length = ciphertext_length - tag_length;
+
+      /* Like GCM, the firmware appends a full SL_SI91X_TAG_SIZE tag after the
+       * plaintext and leaves authentication to the host, so the output is
+       * staged and released only once the tag checks out. The staging buffer
+       * is output-only; the ciphertext is still read from the caller. */
+      uint8_t *chachapoly_output = (uint8_t *)malloc(msg_length + SL_SI91X_TAG_SIZE);
+      if (chachapoly_output == NULL) {
+        return PSA_ERROR_INSUFFICIENT_MEMORY;
+      }
+
+      /* Snapshot the expected tag: PSA allows in-place decryption. */
+      uint8_t expected_tag[SLI_SI91X_AEAD_TAG_MAX_SIZE];
+      memcpy(expected_tag, ciphertext + msg_length, tag_length);
+
+      sli_si91x_aead_dma_inputs_t dma = { 0 };
+      dma.msg                         = ciphertext;
+      dma.msg_length                  = msg_length;
+      dma.ad                          = additional_data;
+      dma.ad_length                   = additional_data_length;
+      dma.nonce                       = temp_nonce;
+      dma.nonce_length                = sizeof(temp_nonce);
+
+      status = sli_si91x_align_aead_inputs(&dma);
+      if (status != PSA_SUCCESS) {
+        free(chachapoly_output);
+        return status;
+      }
+
       config_chachapoly.encrypt_decrypt = SL_SI91X_CHACHAPOLY_DECRYPT;
       config_chachapoly.dma_use         = SL_SI91X_CHACHAPOLY_DMA_ENABLE;
       config_chachapoly.chachapoly_mode = SL_SI91X_CHACHA20POLY1305_MODE;
-      config_chachapoly.msg             = ciphertext;
-      config_chachapoly.msg_length      = ciphertext_length - tag_length;
-      config_chachapoly.nonce           = temp_nonce;
-      config_chachapoly.ad              = additional_data;
+      config_chachapoly.msg             = dma.msg;
+      config_chachapoly.msg_length      = msg_length;
+      config_chachapoly.nonce           = dma.nonce;
+      config_chachapoly.ad              = dma.ad;
       config_chachapoly.ad_length       = additional_data_length;
 
       sli_si91x_set_input_config_chachapoly(attributes, &config_chachapoly, key_buffer);
 
       /* Calling sl_si91x_chachapoly() for CHACHAPOLY decryption */
-      si91x_status = sl_si91x_chachapoly(&config_chachapoly, plaintext);
+      si91x_status = sl_si91x_chachapoly(&config_chachapoly, chachapoly_output);
 
       /* gets the si91x error codes and returns its equivalent psa_status codes */
       status = convert_si91x_error_code_to_psa_status(si91x_status);
+
+      sli_si91x_release_aead_inputs(&dma);
+
+      /* Authenticate before releasing any plaintext to the caller. */
+      if (status == PSA_SUCCESS) {
+        if (mbedtls_ct_memcmp(chachapoly_output + msg_length, expected_tag, tag_length) != 0) {
+          status = PSA_ERROR_INVALID_SIGNATURE;
+        } else if ((plaintext != NULL) && (msg_length > 0)) {
+          memcpy(plaintext, chachapoly_output, msg_length);
+        }
+      }
+      mbedtls_platform_zeroize(expected_tag, sizeof(expected_tag));
+      mbedtls_platform_zeroize(chachapoly_output, msg_length + SL_SI91X_TAG_SIZE);
+      free(chachapoly_output);
+      chachapoly_output = NULL;
 
       break;
     }

@@ -1380,8 +1380,10 @@ static void sli_handle_remote_terminate(sl_wifi_system_packet_t *rx_packet)
     socket->disconnect_reason = SLI_SI91X_BSD_DISCONNECT_REASON_REMOTE_CLOSED;
 
     if (user_remote_socket_termination_callback != NULL) {
-      user_remote_socket_termination_callback(socket->id,
-                                              socket->local_address.sin6_port,
+      // Pass host/BSD socket descriptor and remote peer port so applications can
+      // correlate the callback with socket()/connect() state (SI91X-21999).
+      user_remote_socket_termination_callback((int)index,
+                                              socket->remote_address.sin6_port,
                                               remote_socket_closure->sent_bytes_count);
     }
     break;

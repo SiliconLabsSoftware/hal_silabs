@@ -3531,6 +3531,8 @@ int32_t rsi_ble_get_att_descriptors(uint8_t *dev_addr,
  * @note       This is a non-blocking API.
  *             Still you need to wait until the callback \ref rsi_ble_on_read_resp_t is received from the device,
  *             to initiate further attribute related transactions on this remote device address.
+
+ * @note       Disable `SL_SI91X_BLE_GATT_ASYNC_ENABLE` when using GATT Client synchronous APIs to ensure that the response is delivered through the corresponding API callback.
  *
  * @pre        Pre-conditions:
  *             \ref rsi_ble_connect() API needs to be called before this API.

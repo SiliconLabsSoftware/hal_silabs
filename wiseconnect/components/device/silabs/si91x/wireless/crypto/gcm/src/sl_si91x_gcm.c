@@ -116,7 +116,7 @@ static sl_status_t sli_si91x_gcm_pending(sl_si91x_gcm_config_t *config,
                                  NULL,
                                  (void **)&buffer);
 
-  if ((status != SL_STATUS_OK)) {
+  if (status != SL_STATUS_OK) {
     free(request);
     if (buffer != NULL)
       sli_buffer_manager_free_buffer(buffer);

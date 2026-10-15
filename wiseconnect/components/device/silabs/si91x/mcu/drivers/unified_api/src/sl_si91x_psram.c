@@ -38,6 +38,7 @@
 #include "sl_si91x_psram_handle.h"
 #include "sl_si91x_psram.h"
 #include "sl_code_classification.h"
+#include "sl_si91x_psram_retained_data.h" // SL_SI91X_RETAINED_DATA: keep PSRAM driver state in internal RAM (LTO-safe)
 
 /*******************************************************************************
  *******************************   DEFINES   ***********************************
@@ -57,9 +58,9 @@
 
 extern struct PSRAMSecureSegmentType PSRAMSecureSegments[MAX_SEC_SEGMENTS];
 
-static sl_psram_return_type_t autoModeState = PSRAM_UNKNOWN;
+SL_SI91X_RETAINED_DATA static sl_psram_return_type_t autoModeState = PSRAM_UNKNOWN;
 
-spi_config_t spi_psram_default_config = {
+SL_SI91X_RETAINED_DATA spi_config_t spi_psram_default_config = {
 
   .spi_config_1 = { .inst_mode         = SINGLE_MODE,
                     .addr_mode         = SINGLE_MODE,
@@ -109,7 +110,7 @@ spi_config_t spi_psram_default_config = {
 
 };
 
-static struct PSRAMStatusType PSRAMStatus = {
+SL_SI91X_RETAINED_DATA static struct PSRAMStatusType PSRAMStatus = {
   .state               = unknown,
   .interfaceMode       = SINGLE_MODE,
   .burstSize           = 0,
@@ -117,7 +118,7 @@ static struct PSRAMStatusType PSRAMStatus = {
   .secureSegmentNumber = 0,
 };
 
-struct PSRAMPinConfigType PSRAMPinConfig[NUM_OF_PSRAM_PINS] = {
+SL_SI91X_RETAINED_DATA struct PSRAMPinConfigType PSRAMPinConfig[NUM_OF_PSRAM_PINS] = {
   { M4SS_PSRAM_CLK_PORT, M4SS_PSRAM_CLK_PIN, M4SS_PSRAM_CLK_MUX, M4SS_PSRAM_CLK_PAD },
   { M4SS_PSRAM_CSN_PORT, M4SS_PSRAM_CSN_PIN, M4SS_PSRAM_CSN_MUX, M4SS_PSRAM_CSN_PAD },
   { M4SS_PSRAM_D0_PORT, M4SS_PSRAM_D0_PIN, M4SS_PSRAM_D0_MUX, M4SS_PSRAM_D0_PAD },

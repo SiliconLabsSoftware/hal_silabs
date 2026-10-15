@@ -159,7 +159,7 @@ void RSI_Save_Context(void)
  */
 #ifdef SLI_SI91X_ENABLE_OS
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_RSILIB_CHIP, SL_CODE_CLASS_TIME_CRITICAL)
-STATIC INLINE void RSI_Restore_Context(void)
+STATIC INLINE SL_SI91X_ATTRIBUTE_ALWAYS_INLINE void RSI_Restore_Context(void)
 {
   __set_CONTROL(control_reg_val);
   __set_PSP(psp_value);
@@ -385,7 +385,7 @@ void RSI_Set_Cntrls_To_TA(void)
  * @return      none
  */
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_RSILIB_CHIP, SL_CODE_CLASS_TIME_CRITICAL)
-STATIC INLINE void request_nwp_to_program_flash(uint8_t in_ps2_state)
+STATIC INLINE SL_SI91X_ATTRIBUTE_ALWAYS_INLINE void request_nwp_to_program_flash(uint8_t in_ps2_state)
 {
   if (!in_ps2_state && !(M4SS_P2P_INTR_SET_REG & M4_USING_FLASH)) {
     //! check NWP wokeup or not

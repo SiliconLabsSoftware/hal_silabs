@@ -3135,7 +3135,7 @@ sl_status_t sli_wifi_transmit_cw_tone_start(sl_wifi_interface_t interface, sl_wi
   if (!sl_wifi_is_interface_up(interface)) {
     return SL_STATUS_WIFI_INTERFACE_NOT_UP;
   }
-  if (!((default_interface & interface) == interface)) {
+  if ((default_interface & interface) != interface) {
     return SL_STATUS_INVALID_PARAMETER;
   }
 
@@ -3174,7 +3174,7 @@ sl_status_t sli_wifi_transmit_cw_tone_stop(sl_wifi_interface_t interface)
   if (!sl_wifi_is_interface_up(interface)) {
     return SL_STATUS_WIFI_INTERFACE_NOT_UP;
   }
-  if (!((default_interface & interface) == interface)) {
+  if ((default_interface & interface) != interface) {
     return SL_STATUS_INVALID_PARAMETER;
   }
 
@@ -3244,7 +3244,7 @@ sl_status_t sli_wifi_stop_rx(sl_wifi_interface_t interface)
     return SL_STATUS_WIFI_INTERFACE_NOT_UP;
   }
 
-  if (!((default_interface & interface) == interface)) {
+  if ((default_interface & interface) != interface) {
     return SL_STATUS_INVALID_PARAMETER;
   }
 
@@ -3275,7 +3275,7 @@ sl_status_t sli_wifi_config_xo_ctune(sl_wifi_interface_t interface,
   if (!sl_wifi_is_interface_up(interface)) {
     return SL_STATUS_WIFI_INTERFACE_NOT_UP;
   }
-  if (!((default_interface & interface) == interface)) {
+  if ((default_interface & interface) != interface) {
     return SL_STATUS_INVALID_PARAMETER;
   }
   sli_wifi_request_configure_xo_ctune_t xo_ctune_request = { 0 };
@@ -3318,7 +3318,7 @@ sl_status_t sli_wifi_read_ctune(sl_wifi_interface_t interface,
   if (!sl_wifi_is_interface_up(interface)) {
     return SL_STATUS_WIFI_INTERFACE_NOT_UP;
   }
-  if (!((default_interface & interface) == interface)) {
+  if ((default_interface & interface) != interface) {
     return SL_STATUS_INVALID_PARAMETER;
   }
 
@@ -3402,7 +3402,7 @@ sl_status_t sli_wifi_add_vendor_ie(sl_wifi_vendor_ie_t *vendor_ie, uint8_t *fw_u
   const sl_wifi_system_packet_t *resp_packet =
     (sl_wifi_system_packet_t *)sli_wifi_host_get_buffer_data((void *)buffer, 0, NULL);
 
-  if ((resp_packet != NULL)) {
+  if (resp_packet != NULL) {
     *fw_unique_id = resp_packet->data[0];
     SL_DEBUG_LOG_V2(INFO, "vendor IE added with unique ID: %d\r\n", *fw_unique_id);
     sli_buffer_manager_free_buffer(buffer);
@@ -4316,7 +4316,7 @@ sl_status_t sli_wifi_set_beacon_drop_threshold(sl_wifi_interface_t interface, ui
     return SL_STATUS_WIFI_INTERFACE_NOT_UP;
   }
 
-  if (!((default_interface & interface) == interface)) {
+  if ((default_interface & interface) != interface) {
 #if defined(SLI_SI917)
     SL_DEBUG_LOG_V2(WARN, "bcon drop: bad iface\r\n");
 #endif

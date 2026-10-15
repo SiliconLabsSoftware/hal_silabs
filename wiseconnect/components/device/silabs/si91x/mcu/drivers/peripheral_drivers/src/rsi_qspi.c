@@ -337,7 +337,7 @@ void qspi_status_reg_write(qspi_reg_t *qspi_reg,
     // enable status reg write
     qspi_enable_status_reg_write(qspi_reg, spi_config->spi_config_1.flash_type, spi_config, cs_no);
 #if 0       
-		if ((flash_type == WBOND_QUAD_FLASH)) {
+		if (flash_type == WBOND_QUAD_FLASH) {
 			qspi_func->write_to_flash(qspi_reg, CMD_LEN, WREN, cs_no);   
 			DEASSERT_CSN;
 		}
@@ -712,7 +712,7 @@ void qspi_set_flash_mode(qspi_reg_t *qspi_reg,
     enable_bus_mode = EQIO;
     reset_bus_mode  = RSTQIO;
   }
-  if ((data_mode == QUAD_MODE)) {
+  if (data_mode == QUAD_MODE) {
     qspi_write_to_flash(qspi_reg, QSPI_8BIT_LEN, enable_bus_mode, cs_no);
 
     DEASSERT_CSN;

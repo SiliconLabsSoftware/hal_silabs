@@ -69,7 +69,7 @@
   * @def SL_WIFI_FEAT_SECURITY_OPEN
   * @brief Security type: Open.
   * @details
-  * This feature supports open security type in client mode.
+  * This feature supports open security type in client mode and AP mode.
   * 
   * @note It is recommended to enable this macro to configure the security type as open mode.
   */
@@ -613,7 +613,7 @@
  * @def SL_SI91X_FEAT_SECURITY_OPEN
  * @brief Security type: Open.
  * @details
- * This feature supports open security type in client mode.
+ * This feature supports open security type in client mode and AP mode.
  * 
  * @note It is recommended to enable this macro to configure the security type as open mode.
  */

@@ -170,17 +170,32 @@ int32_t rsi_ble_driver_init(uint8_t *buffer, uint32_t length)
 
 //======================================================
 /**
+ * @fn          int32_t rsi_ble_driver_deinit(void)
+ * @brief       De-initialize BLE driver components allocated by
+ *              \ref rsi_ble_driver_init(). This is a non-blocking API.
  *
- * @brief       De-Initialize driver components. Clear all the memory given for driver operations in \ref rsi_ble_driver_init() API.
- * In OS case,  User need to take care of OS variables initialized in \ref rsi_ble_driver_init(). This is a non-blocking API.
- * This API must be called by the thread/task/Master thread that it is not dependent on.
- * OS variables allocated/initialized in \ref rsi_ble_driver_init() API.
- * @pre 		Need to call after the driver initialization
- * @param[in]   Void
+ * @details     Clears driver OS objects and device state created during
+ *              \ref rsi_ble_driver_init(). Does not stop ADV/SCAN or disconnect
+ *              links; the application must quiesce BLE before NWP/Wi-Fi deinit.
+ *
+ * @pre         Need to call after successful driver initialization
+ *              (\ref rsi_ble_driver_init()). Call from a context that is not
+ *              dependent on BLE driver services after teardown.
+ *
+ * @param[in]   void
+ *
  * @return      0              - Success \n
- *              Non-Zero Value - Failure
+ *              -3             - Command given in wrong state \n
+ *              Non-Zero Value - Failure (for example, buffer address is NULL)
+ *
+ * @note        If this API is invoked as part of the sl_wifi_deinit() sequence,
+ *              ensure that any active BLE advertising and scanning roles are
+ *              stopped before calling this API. After the API call, wait for
+ *              the BLE disconnect event(s) to be received before invoking
+ *              sl_wifi_deinit(). Additionally, the application should not
+ *              restart advertising or scanning from the BLE disconnect event
+ *              handler during this deinitialization flow.
  */
-
 int32_t rsi_ble_driver_deinit(void)
 {
   SL_PRINTF(SL_DRIVER_DEINIT_ENTRY, COMMON, LOG_INFO);
@@ -225,6 +240,9 @@ int32_t rsi_ble_driver_deinit(void)
   return RSI_SUCCESS;
 }
 
+/** @addtogroup BT-BLE
+* @{
+*/
 /*==============================================*/
 /**
  * @brief      Enable BLE at runtime. See @ref rsi_ble_enable() in rsi_common_apis.h for
@@ -298,6 +316,7 @@ int32_t rsi_ble_disable(void)
 
   return (int32_t)status;
 }
+/** @} */
 
 /*==============================================*/
 /**

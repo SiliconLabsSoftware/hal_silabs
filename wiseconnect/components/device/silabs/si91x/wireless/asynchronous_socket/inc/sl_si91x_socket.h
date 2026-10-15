@@ -1283,14 +1283,20 @@ int sl_si91x_select(int nfds,
  *
  * @see sl_si91x_socket_async(), sl_si91x_accept_async()
  *
+ * @note Callback arguments:
+ * - The first argument is the socket index (BSD socket descriptor) returned by
+ *   @ref sl_si91x_socket() / @ref sl_si91x_socket_async() / `socket()`.
+ * - The second argument is the remote peer port.
+ * - Correlate the first argument with the value returned by socket creation APIs through close.
+ *
  * @par Example
- * Define a handler that the stack invokes when the remote peer closes its
- * socket, and register it:
  * @code{.c}
- * static void on_remote_termination(int socket_id, uint16_t port_number, uint32_t bytes_sent)
+ * static void on_remote_termination(int socket_index, uint16_t remote_port, uint32_t bytes_sent)
  * {
- *   printf("Remote closed socket %d (port %u), %lu bytes sent\r\n",
- *          socket_id, port_number, (unsigned long)bytes_sent);
+ *   UNUSED_PARAMETER(socket_index);
+ *   UNUSED_PARAMETER(remote_port);
+ *   UNUSED_PARAMETER(bytes_sent);
+ *   // Application-specific handling
  * }
  *
  * sl_si91x_set_remote_termination_callback(on_remote_termination);

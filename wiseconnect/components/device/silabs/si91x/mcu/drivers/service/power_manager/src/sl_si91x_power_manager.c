@@ -44,6 +44,16 @@
 #include "sl_log_platform_specific.h"
 #endif
 #include "sl_code_classification.h"
+/* SL_SI91X_RETAINED_DATA: keep the power-state variable in internal RAM across
+ * sleep/wakeup (LTO-safe). The header is provided by psram_core and is only on
+ * the include path in PSRAM projects, so guard the include and fall back to a
+ * no-op macro for non-PSRAM builds. */
+#if defined(DATA_SEGMENT_IN_PSRAM)
+#include "sl_si91x_psram_retained_data.h"
+#endif
+#ifndef SL_SI91X_RETAINED_DATA
+#define SL_SI91X_RETAINED_DATA
+#endif
 /*******************************************************************************
  ***************************  DEFINES / MACROS   ********************************
  ******************************************************************************/
@@ -55,10 +65,10 @@
 /*******************************************************************************
  *************************** LOCAL VARIABLES   *******************************
  ******************************************************************************/
-static sl_power_state_t current_state                          = SL_SI91X_POWER_MANAGER_PS3;
-static boolean_t is_initialized                                = false;
-static sl_slist_node_t *power_manager_ps_transition_event_list = NULL;
-static sl_clock_scaling_t clock_scaling_mode                   = SL_SI91X_POWER_MANAGER_POWERSAVE;
+SL_SI91X_RETAINED_DATA static sl_power_state_t current_state        = SL_SI91X_POWER_MANAGER_PS3;
+static boolean_t is_initialized                                     = false;
+static sl_slist_node_t *power_manager_ps_transition_event_list      = NULL;
+SL_SI91X_RETAINED_DATA static sl_clock_scaling_t clock_scaling_mode = SL_SI91X_POWER_MANAGER_POWERSAVE;
 
 // Indicates whether the M4 core is ready to transition to the PS1 sleep state.
 // PS1 sleep will be triggered when the application is in the IDLE state and this flag is set.

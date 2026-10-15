@@ -37,7 +37,7 @@
 
 // SYSRTC Default pins for compare group is taken as Mode 3
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_RSILIB_SYSRTC, SL_CODE_CLASS_TIME_CRITICAL)
-STATIC INLINE void RSI_NPSSGPIO_SetPinMux(uint8_t pin, uint8_t mux)
+STATIC INLINE SL_SI91X_ATTRIBUTE_ALWAYS_INLINE void RSI_NPSSGPIO_SetPinMux(uint8_t pin, uint8_t mux)
 {
   MCU_RET->NPSS_GPIO_CNTRL[pin].NPSS_GPIO_CTRLS_b.NPSS_GPIO_MODE = mux;
 }
@@ -52,7 +52,7 @@ STATIC INLINE void RSI_NPSSGPIO_SetPinMux(uint8_t pin, uint8_t mux)
  *@return  : none
  * */
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_RSILIB_SYSRTC, SL_CODE_CLASS_TIME_CRITICAL)
-STATIC INLINE void RSI_NPSSGPIO_InputBufferEn(uint8_t pin, boolean_t enable)
+STATIC INLINE SL_SI91X_ATTRIBUTE_ALWAYS_INLINE void RSI_NPSSGPIO_InputBufferEn(uint8_t pin, boolean_t enable)
 {
   MCU_RET->NPSS_GPIO_CNTRL[pin].NPSS_GPIO_CTRLS_b.NPSS_GPIO_REN = enable;
 }
@@ -66,7 +66,7 @@ STATIC INLINE void RSI_NPSSGPIO_InputBufferEn(uint8_t pin, boolean_t enable)
  *@return  : none
  * */
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_RSILIB_SYSRTC, SL_CODE_CLASS_TIME_CRITICAL)
-STATIC INLINE void RSI_NPSSGPIO_SetDir(uint8_t pin, boolean_t dir)
+STATIC INLINE SL_SI91X_ATTRIBUTE_ALWAYS_INLINE void RSI_NPSSGPIO_SetDir(uint8_t pin, boolean_t dir)
 {
   MCU_RET->NPSS_GPIO_CNTRL[pin].NPSS_GPIO_CTRLS_b.NPSS_GPIO_OEN = dir;
 }

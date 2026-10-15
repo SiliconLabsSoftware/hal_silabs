@@ -246,7 +246,7 @@ __STATIC_INLINE void rsi_sysrtc_wait_ready(void)
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_RSILIB_SYSRTC, SL_CODE_CLASS_TIME_CRITICAL)
 __STATIC_INLINE void rsi_sysrtc_grp0_sync()
 {
-  while ((SYSRTC0->GRP0_SYNCBUSY != 0))
+  while (SYSRTC0->GRP0_SYNCBUSY != 0)
     ;
   // Wait for all synchronizations to finish
 }
@@ -258,7 +258,7 @@ __STATIC_INLINE void rsi_sysrtc_grp0_sync()
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_RSILIB_SYSRTC, SL_CODE_CLASS_TIME_CRITICAL)
 __STATIC_INLINE void rsi_sysrtc_grp1_sync()
 {
-  while ((SYSRTC0->GRP1_SYNCBUSY != 0))
+  while (SYSRTC0->GRP1_SYNCBUSY != 0)
     ;
   // Wait for all synchronizations to finish
 }

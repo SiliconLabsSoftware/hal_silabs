@@ -195,20 +195,22 @@ typedef void (*sl_si91x_socket_select_callback_t)(sl_si91x_fdset_t *fd_read,
  * @brief Callback function indicates termination of the remote socket.
  *
  * @details
- * The callback function notifies on the termination of the remote socket when the sl_si91x_set_remote_termination_callback API is registered and called. 
- * The callback provides the following details: socket ID, remote socket port number, and number of bytes sent before termination of the remote socket.
+ * The callback function notifies termination of the remote socket when the sl_si91x_set_remote_termination_callback API is registered and called.
+ * The callback provides the following details: host socket index (BSD socket descriptor), remote peer port number, and number of bytes sent before termination of the remote socket.
  *
- * @param socket
- *   Socket ID.
+ * Use the same socket index returned by `sl_si91x_socket()` / `sl_si91x_socket_async()` / `socket()` to correlate create, transfer, and remote-termination events.
  *
- * @param port
- *   Remote socket port number.
+ * @param[in] socket
+ *   Host socket index (BSD socket descriptor) returned by socket creation APIs.
  *
- * @param bytes_sent
+ * @param[in] port
+ *   Remote peer port number.
+ *
+ * @param[in] bytes_sent
  *   Number of bytes sent before termination.
  *
  * @return
- *  The callback does not returns value.
+ *  The callback does not return a value.
  */
 typedef void (*sl_si91x_socket_remote_termination_callback_t)(int socket, uint16_t port, uint32_t bytes_sent);
 

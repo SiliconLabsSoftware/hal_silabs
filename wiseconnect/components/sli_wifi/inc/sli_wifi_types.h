@@ -590,6 +590,7 @@ typedef struct {
   uint8_t ie_buffer[];        ///< Flexible array for raw IE buffer
 } sli_wifi_manage_vendor_ie_packet_t;
 
+#pragma pack(1)
 typedef struct {
   uint8_t
     pll_mode; ///< PLL Mode. 0 - less than 120 Mhz NWP SoC clock; 1 - greater than 120 Mhz NWP SoC clock (Mode 1 is not currently supported for coex)
@@ -597,8 +598,11 @@ typedef struct {
   uint8_t wireless_mode;    ///< Wireless Mode.
   uint8_t enable_ppp;       ///< Enable PPP.
   uint8_t afe_type;         ///< AFE Type.
+  uint8_t reserved_1;       ///< Reserved.
+  uint16_t reserved_2;      ///< Reserved.
   uint32_t feature_enables; ///< Feature Enables.
-} sli_wifi_feature_frame_request;
+} sli_wifi_feature_frame_request_t;
+#pragma pack()
 
 // WLAN Frame
 typedef struct {

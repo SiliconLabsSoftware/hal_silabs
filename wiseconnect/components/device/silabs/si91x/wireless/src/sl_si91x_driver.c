@@ -582,12 +582,12 @@ sl_status_t sl_si91x_driver_init(const sl_wifi_device_configuration_t *config, s
   // Configure various wireless features
   sli_wifi_feature_frame_config_t current_config = sli_wifi_get_feature_frame_config();
 
-  sli_wifi_feature_frame_request feature_frame_request = { .pll_mode        = (uint8_t)current_config.pll_mode,
-                                                           .rf_type         = RF_TYPE,
-                                                           .wireless_mode   = (uint8_t)current_config.power_chain,
-                                                           .enable_ppp      = ENABLE_PPP,
-                                                           .afe_type        = AFE_TYPE,
-                                                           .feature_enables = SLI_FEATURE_ENABLES };
+  sli_wifi_feature_frame_request_t feature_frame_request = { .pll_mode        = (uint8_t)current_config.pll_mode,
+                                                             .rf_type         = RF_TYPE,
+                                                             .wireless_mode   = (uint8_t)current_config.power_chain,
+                                                             .enable_ppp      = ENABLE_PPP,
+                                                             .afe_type        = AFE_TYPE,
+                                                             .feature_enables = SLI_FEATURE_ENABLES };
 
   // Set PLL mode to 1 when 120 MHz or 160 MHz SoC clock is configured
   if (boot_config.custom_feature_bit_map
