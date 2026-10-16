@@ -147,6 +147,7 @@ paths = [
     "components/device/silabs/si91x/mcu/drivers/unified_api/inc/sl_si91x_driver_gpio.h",
     "components/device/silabs/si91x/mcu/drivers/unified_api/inc/sl_si91x_psram.h",
     "components/device/silabs/si91x/mcu/drivers/unified_api/inc/sl_si91x_psram_handle.h",
+    "components/device/silabs/si91x/mcu/drivers/unified_api/inc/sl_si91x_psram_retained_data.h",
     "components/device/silabs/si91x/mcu/drivers/unified_api/inc/sl_si91x_pwm.h",
     "components/device/silabs/si91x/mcu/drivers/unified_api/src/rsi_d_cache.c",
     "components/device/silabs/si91x/mcu/drivers/unified_api/src/sl_si91x_calendar.c",
