@@ -24,6 +24,457 @@ blobs:
     doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
     size: 1234
     fetcher: lfs
+  # libzigbee-cbke-163k1.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-cbke-163k1/release/libzigbee-cbke-163k1.a
+    sha256: 1a156e57ed58097fac4ba7a0a11ade390fb5a54e30cc9c364085f6f28f53ebdf
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee CBKE 163k1 Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 72048
+    fetcher: lfs
+  # libzigbee-cbke-283k1.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-cbke-283k1/release/libzigbee-cbke-283k1.a
+    sha256: 6c13097c64467f868dd493ae7c1ddf0eab3fa8ffa569319efaa2c462846c6aed
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee CBKE 283k1 Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 70734
+    fetcher: lfs
+  # libzigbee-cbke-core.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-cbke-core/release/libzigbee-cbke-core.a
+    sha256: 51ddfdfdb8db43eac4eaf05b01b7119c0019b1637348a0d1d2e8e984cc75fe4b
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee CBKE Core Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 29264
+    fetcher: lfs
+  # libzigbee-cbke-dsa-sign.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-cbke-dsa-sign/release/libzigbee-cbke-dsa-sign.a
+    sha256: 9a7a2960c58c84bd23faca4b184e51149444c74456c53883d6e59e79d5561ef1
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee CBKE DSA Sign Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 20854
+    fetcher: lfs
+  # libzigbee-cbke-dsa-verify-283k1.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-cbke-dsa-verify-283k1/release/libzigbee-cbke-dsa-verify-283k1.a
+    sha256: f627f0170c06a4baa659c3e3a7c46b3cca47af6be4c209eaa0e69150637a5515
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee CBKE DSA Verify 283k1 Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 16332
+    fetcher: lfs
+  # libzigbee-cbke-dsa-verify.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-cbke-dsa-verify/release/libzigbee-cbke-dsa-verify.a
+    sha256: 4d1bca87f32a6e45486033f271e475d0c93d205345f6357cf050a04e87b5c60e
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee CBKE DSA Verify Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 15694
+    fetcher: lfs
+  # libzigbee-debug-basic.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-debug-basic/release/libzigbee-debug-basic.a
+    sha256: 559b625baf6d50d20b607fa015bef30b3d319cfef36ad2a8c195f0c4d1668d56
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Debug Basic Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 24956
+    fetcher: lfs
+  # libzigbee-debug-extended.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-debug-extended/release/libzigbee-debug-extended.a
+    sha256: ee942f3aeac119cc0fb18a9a64caa087cf065b9b21181abed09330c671ad36ff
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Debug Extended Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 15004
+    fetcher: lfs
+  # libzigbee-dynamic-commissioning.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-dynamic-commissioning/release/libzigbee-dynamic-commissioning.a
+    sha256: d85c200fa83453f6464a0a8c54fd12e40e43349240fed28d072a10efdad3ea88
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Dynamic Commissioning Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 129312
+    fetcher: lfs
+  # libzigbee-gp.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-gp/release/libzigbee-gp.a
+    sha256: 0d52cdbd1fb49f78e822c30268a6539752a3179917d30954c552a62c44f06a18
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Green Power Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 184636
+    fetcher: lfs
+  # libzigbee-mfglib.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-mfglib/release/libzigbee-mfglib.a
+    sha256: f704f2e1904da46ef4bd7e6be020249c3ca003780cc8207e8ef58664b49da8c5
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Manufacturing Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 41508
+    fetcher: lfs
+  # libzigbee-multi-network.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-multi-network/release/libzigbee-multi-network.a
+    sha256: 29b65e88db29ff8b1897628897fc43f04d9bc7fed86b96bf572000914be33087
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Multi-Network Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 65082
+    fetcher: lfs
+  # libzigbee-multi-pan.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-multi-pan/release/libzigbee-multi-pan.a
+    sha256: 9969cfe29ac6a68f25c0eba78e139006ef230a6d56df0173929001e983c9cdd6
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Multi-PAN Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 24778
+    fetcher: lfs
+  # libzigbee-ncp-cpc.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-ncp-cpc/release/libzigbee-ncp-cpc.a
+    sha256: 1a0967b0f4b67c90d00fa76e8d3fb6201c0daf3e807e73649e1c763f7a7d1869
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee NCP CPC Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 278108
+    fetcher: lfs
+  # libzigbee-ncp-spi.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-ncp-spi/release/libzigbee-ncp-spi.a
+    sha256: 15efba66ddb88bfa2e2eb6895e9859f3cb34ff94aa3cb0e29fd50c2086781a38
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee NCP SPI Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 259574
+    fetcher: lfs
+  # libzigbee-ncp-uart.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-ncp-uart/release/libzigbee-ncp-uart.a
+    sha256: 4cd63cfde2647334972893af59c7c2b44e8b40470b7f750f8cadcc642d44c68a
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee NCP UART Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 242068
+    fetcher: lfs
+  # libzigbee-pro-leaf-stack-mac-test-cmds.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-leaf-stack-mac-test-cmds/release/libzigbee-pro-leaf-stack-mac-test-cmds.a
+    sha256: 3b62131efbf537af883eb022351e70f5ba90ee11c38824f8561c0592841fbb54
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Leaf Stack MAC Test Commands Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 2664028
+    fetcher: lfs
+  # libzigbee-pro-leaf-stack.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-leaf-stack/release/libzigbee-pro-leaf-stack.a
+    sha256: b1c73f56fcf74fc1590a7d7e82f5939f4a540fd2b6f882a8d8af05db21e6c98e
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Leaf Stack Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 2656818
+    fetcher: lfs
+  # libzigbee-pro-router-stack-rail-mux.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-router-stack-rail-mux/release/libzigbee-pro-router-stack-rail-mux.a
+    sha256: 28ed775f7553f16912e3f3b9a72898717cae4d28ac785af8ec494a5840c7ac9b
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Router Stack RAIL Mux Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 2941196
+    fetcher: lfs
+  # libzigbee-pro-router-stack-with-high-datarate-phy-rail-mux.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-router-stack-with-high-datarate-phy-rail-mux/release/libzigbee-pro-router-stack-with-high-datarate-phy-rail-mux.a
+    sha256: fc98bb3494d278b638b91ece63c41446804dd330640d6784c72bb715ffab8282
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Router Stack High Data Rate PHY RAIL Mux Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 2967262
+    fetcher: lfs
+  # libzigbee-pro-router-stack-with-high-datarate-phy.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-router-stack-with-high-datarate-phy/release/libzigbee-pro-router-stack-with-high-datarate-phy.a
+    sha256: 21a3c32c8f3169500a8785da935d8071b1ec3ba15deb2101302cece2f4f8973e
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Router Stack High Data Rate PHY Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 2962470
+    fetcher: lfs
+  # libzigbee-pro-router-stack.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-router-stack/release/libzigbee-pro-router-stack.a
+    sha256: 9a87430128fa3eef73f8ada78c90a09b8b4dc829d441a6e651b69efe9a50a5de
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Router Stack Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 2936634
+    fetcher: lfs
+  # libzigbee-pro-stack-alt-mac.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-stack-alt-mac/release/libzigbee-pro-stack-alt-mac.a
+    sha256: d3584f9460a45903cd723cc55c97ff6065fafa64966d0f7ee89a56f7b8fbac1e
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Stack Alternate MAC Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 3065456
+    fetcher: lfs
+  # libzigbee-pro-stack-mac-test-cmds.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-stack-mac-test-cmds/release/libzigbee-pro-stack-mac-test-cmds.a
+    sha256: 6e30e3314f42eafa19867b9fe2bca27f8cbbd4f3dd1a1e8fa8f09f50ff73ef56
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Stack MAC Test Commands Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 3010700
+    fetcher: lfs
+  # libzigbee-pro-stack-non-default-mac.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-stack-non-default-mac/release/libzigbee-pro-stack-non-default-mac.a
+    sha256: a8734ee1a0cfcbafb2030ec8b3d6c153d2393517ef8f4837c4bc1e2735b055df
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Stack Non-Default MAC Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 3025878
+    fetcher: lfs
+  # libzigbee-pro-stack-rail-mux.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-stack-rail-mux/release/libzigbee-pro-stack-rail-mux.a
+    sha256: 89890bd0d0436b753c36b7ff2c1048d07893347e8cbdc37a5543fbcd1cb09d7c
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Stack RAIL Mux Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 3006880
+    fetcher: lfs
+  # libzigbee-pro-stack-with-high-datarate-phy-rail-mux.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-stack-with-high-datarate-phy-rail-mux/release/libzigbee-pro-stack-with-high-datarate-phy-rail-mux.a
+    sha256: 93fea08f62c8c5da8f0ead572a0809ef15f96c5e99a731612704dcf415bd596e
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Stack High Data Rate PHY RAIL Mux Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 3032740
+    fetcher: lfs
+  # libzigbee-pro-stack-with-high-datarate-phy.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-stack-with-high-datarate-phy/release/libzigbee-pro-stack-with-high-datarate-phy.a
+    sha256: cbabbed920daf5f33ce38833868a47764ef72c81eb3cb4a591f5e592d5d70df2
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Stack High Data Rate PHY Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 3028090
+    fetcher: lfs
+  # libzigbee-pro-stack.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-pro-stack/release/libzigbee-pro-stack.a
+    sha256: 205753b7d91e548d2685bf490324bebcac087ae3435a56605180a973dedc4e52
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee PRO Stack Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 3002268
+    fetcher: lfs
+  # libzigbee-r22-support-mac-test-cmds.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-r22-support-mac-test-cmds/release/libzigbee-r22-support-mac-test-cmds.a
+    sha256: c166762398e523525305cac8048a3dabfe5e6582509640015fb7eec5cb38fa60
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee R22 Support MAC Test Commands Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 86458
+    fetcher: lfs
+  # libzigbee-r22-support.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-r22-support/release/libzigbee-r22-support.a
+    sha256: 9ae248221b062430f31b0c8b36b65f580dd81c6687e5b127a087e0e079364660
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee R22 Support Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 86214
+    fetcher: lfs
+  # libzigbee-r23-support.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-r23-support/release/libzigbee-r23-support.a
+    sha256: 20f3c39f60f080f7315d51534fd69e3e15a00f6f6ab3b6cc8e1ffdee9aa98a44
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee R23 Support Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 380418
+    fetcher: lfs
+  # libzigbee-source-route.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-source-route/release/libzigbee-source-route.a
+    sha256: 60f65c97f28fe71573641cc44602baf65e825c6e9abf38b4ac480e602498e3c2
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee Source Route Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 64876
+    fetcher: lfs
+  # libzigbee-xncp.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-xncp/release/libzigbee-xncp.a
+    sha256: 6270f495039fb2b36abae2af49e3ec75e7f689394f66b22c27e28ef547737c3a
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee XNCP Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 15366
+    fetcher: lfs
+  # libzigbee-zll.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/zigbee-zll/release/libzigbee-zll.a
+    sha256: 87316f5f4a2b6230eced40fc16f7ee4d009808b86782fc93fd82700438637538
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "Zigbee ZLL Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 218550
+    fetcher: lfs
+  # libncp-cbke-library.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/ncp-cbke-library/release/libncp-cbke-library.a
+    sha256: e418c270c8d6157e0abfe5403aadbc171519b303dd2f51ddf37dcd6d4cc2db89
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "NCP CBKE Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 27928
+    fetcher: lfs
+  # libncp-gp-library.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/ncp-gp-library/release/libncp-gp-library.a
+    sha256: b62f7964dba7c2640744468a76c9e848914adfc022343c866d4398218bad98aa
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "NCP Green Power Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 12782
+    fetcher: lfs
+  # libncp-mfglib.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/ncp-mfglib-library/release/libncp-mfglib-library.a
+    sha256: 0f260952e4f0554fba9a469f8595bc30fccc829e8985e05d3bb55061f4239d10
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "NCP Manufacturing Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 12942
+    fetcher: lfs
+  # libncp-pro-library.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/ncp-pro-library/release/libncp-pro-library.a
+    sha256: 43314a53a4c9db685509c1c59a880d4dc89166ff2e8e678dc0f5e314613aa33a
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "NCP PRO Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 225020
+    fetcher: lfs
+  # libncp-source-route-library.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/ncp-source-route-library/release/libncp-source-route-library.a
+    sha256: e3aa27c291f4e3d46ff3011137bca1252518a776b8e216ec753678e983646848
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "NCP Source Route Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 17052
+    fetcher: lfs
+  # libncp-zll-library.a
+  - path: simplicity_sdk/zigbee/libs/build/gcc/cortex-m33/ncp-zll-library/release/libncp-zll-library.a
+    sha256: 52ecfdfa8c8351ffeaf477ef333cdaa38dadd63ec1bdb14716379e31bf523b0f
+    type: lib
+    version: "2026.6.0"
+    license-path: zephyr/blobs/license/MSLA.txt
+    url: https://artifacts.silabs.net/artifactory/api/lfs/gsdk
+    description: "NCP ZLL Library for EFR32"
+    doc-url: https://github.com/SiliconLabsSoftware/sisdk-release
+    size: 24730
+    fetcher: lfs
   # libbluetooth_controller
   - path: simplicity_sdk/protocol/bluetooth/bgstack/ll/build/gcc/xg21/release/liblinklayer.a
     sha256: a535c520c3e479190c4f157033c79de45202975eb83c41b1b4551c70a7aeaec7
