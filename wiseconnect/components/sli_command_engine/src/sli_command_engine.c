@@ -126,6 +126,15 @@ typedef struct {
 static uint8_t __aligned(8) command_engine_stack[1636];
 static struct cmsis_rtos_thread_cb command_engine_thread_cb;
 
+/* Statically allocated so registration ack does not depend on CMSIS dynamic event-flag slots
+ * (Zephyr default CONFIG_CMSIS_V2_EVT_FLAGS_MAX_COUNT is only 5). */
+static struct cmsis_rtos_event_cb command_engine_response_events_cb;
+static const osEventFlagsAttr_t command_engine_response_events_attr = {
+  .name      = "cmd_eng_rsp",
+  .attr_bits = 0,
+  .cb_mem    = &command_engine_response_events_cb,
+  .cb_size   = sizeof(command_engine_response_events_cb),
+};
 static osEventFlagsId_t command_engine_response_events = NULL;
 
 /******************************************************
@@ -1221,7 +1230,11 @@ sl_status_t sli_command_engine_init(sli_command_engine_t *instance,
   }
 
   if (!command_engine_response_events) {
-    command_engine_response_events = osEventFlagsNew(NULL);
+    command_engine_response_events = osEventFlagsNew(&command_engine_response_events_attr);
+    if (NULL == command_engine_response_events) {
+      sli_command_engine_deinit_if_initialized(instance);
+      VERIFY_STATUS_AND_RETURN(SL_STATUS_NO_MORE_RESOURCE);
+    }
   }
 
   // Thread attributes
