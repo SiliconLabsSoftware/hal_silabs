@@ -328,6 +328,46 @@ bool sli_si91x_get_tx_command_status(void);
  ******************************************************************************/
 void sli_si91x_update_tx_command_status(bool flag);
 
+#ifdef SL_SI91X_SIDE_BAND_CRYPTO
+/***************************************************************************/ /**
+ * @brief
+ *   Retrieves the current status of the side-band crypto command.
+ *
+ * @return
+ *   Returns `true` if a side-band crypto command is in progress, `false` otherwise.
+ ******************************************************************************/
+bool sli_si91x_get_side_band_crypto_command_status(void);
+
+/***************************************************************************/ /**
+ * @brief
+ *   Updates the status of the side-band crypto command.
+ *
+ * @param[in] flag
+ *   Set to `true` while a side-band crypto command is in progress, or `false` when it has completed.
+ ******************************************************************************/
+void sli_si91x_update_side_band_crypto_command_status(bool flag);
+
+/***************************************************************************/ /**
+ * @brief
+ *   Marks the in-flight side-band crypto request as timed out.
+ *
+ * @details
+ *   After this call the SIDE_BAND_CRYPTO_DONE interrupt handler releases the NWP wake hold and clears the
+ *   side-band in-progress flag when the NWP completes. Call with interrupts disabled, and only after
+ *   confirming the completion event has not already been signalled.
+ ******************************************************************************/
+void sli_si91x_side_band_crypto_mark_timed_out(void);
+
+/***************************************************************************/ /**
+ * @brief
+ *   Reports whether a timed-out side-band crypto request is still owned by the NWP.
+ *
+ * @return
+ *   Returns `true` until the NWP signals completion of the timed-out request, `false` otherwise.
+ ******************************************************************************/
+bool sli_si91x_side_band_crypto_is_timed_out(void);
+#endif
+
 #ifdef SLI_SI91X_OFFLOAD_NETWORK_STACK
 /**
  * @brief 

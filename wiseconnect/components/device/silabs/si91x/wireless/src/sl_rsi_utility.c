@@ -57,6 +57,10 @@
 #include "sl_string.h"
 
 static bool sli_si91x_tx_command_status = false;
+#ifdef SL_SI91X_SIDE_BAND_CRYPTO
+/* Side-band crypto command in-progress flag. */
+static bool sli_si91x_side_band_crypto_status = false;
+#endif
 /******************************************************
  *               Macro Declarations
  ******************************************************/
@@ -231,12 +235,28 @@ void sli_si91x_update_tx_command_status(bool flag)
   sli_si91x_tx_command_status = flag;
 }
 
+#ifdef SL_SI91X_SIDE_BAND_CRYPTO
+bool sli_si91x_get_side_band_crypto_command_status(void)
+{
+  return sli_si91x_side_band_crypto_status;
+}
+
+void sli_si91x_update_side_band_crypto_command_status(bool flag)
+{
+  sli_si91x_side_band_crypto_status = flag;
+}
+#endif
+
 /*  This function is used to update the power manager to see whether the device is ready for sleep or not.
  True indicates ready for sleep, and false indicates not ready for sleep.*/
 bool sli_si91x_is_sdk_ok_to_sleep()
 {
-  return ((!sli_si91x_get_flash_command_status()) && (sl_si91x_is_device_initialized())
-          && (!sli_si91x_get_tx_command_status()));
+  bool ok_to_sleep = (!sli_si91x_get_flash_command_status()) && sl_si91x_is_device_initialized()
+                     && (!sli_si91x_get_tx_command_status());
+#ifdef SL_SI91X_SIDE_BAND_CRYPTO
+  ok_to_sleep = ok_to_sleep && (!sli_si91x_get_side_band_crypto_command_status());
+#endif
+  return ok_to_sleep;
 }
 
 bool sl_si91x_is_device_initialized(void)

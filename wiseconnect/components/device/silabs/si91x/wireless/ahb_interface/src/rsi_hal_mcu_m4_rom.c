@@ -47,10 +47,16 @@ osEventFlagsId_t ta_events = NULL;
 #define TA_PKT_TX_DONE (1 << 1)
 #ifdef SL_SI91X_SIDE_BAND_CRYPTO
 #define SIDE_BAND_DONE (1 << 2)
+/* True from the moment a side-band crypto request times out until the NWP reports SIDE_BAND_DONE.
+ * Set by the driver with interrupts disabled; cleared only by the SIDE_BAND_CRYPTO_DONE ISR. */
+static volatile bool sli_si91x_side_band_crypto_timed_out = false;
 #endif
 
 static bool m4_is_using_xtal_without_ta_notification;
 static bool m4_using_xtal;
+
+/* Number of callers that currently need the NWP awake. M4_wakeup_TA stays set until this hits zero. */
+static uint32_t sli_si91x_nwp_wake_refcount = 0;
 
 SL_CODE_CLASSIFY(SL_CODE_COMPONENT_SI91X_WIRELESS, SL_CODE_CLASS_TIME_CRITICAL)
 void sl_si91x_host_clear_sleep_indicator(void);
@@ -171,12 +177,8 @@ void sli_si91x_xtal_turn_on_request_from_m4_to_TA(void)
  */
 void sli_si91x_raise_xtal_interrupt_to_ta(uint16_t interrupt_no)
 {
-  //! Wake up NWP
-  P2P_STATUS_REG |= M4_WAKEUP_TA;
-
-  //!wait for NWP active
-  while (!(P2P_STATUS_REG & TA_IS_ACTIVE))
-    ;
+  //! Wake up NWP. The matching release is sl_si91x_host_clear_sleep_indicator() below.
+  (void)sli_si91x_req_wakeup();
 
   // Write the turn_on_xtal interrupt to NWP register
   M4SS_P2P_INTR_SET_REG = interrupt_no;
@@ -213,10 +215,8 @@ sl_status_t sli_si91x_M4_TA_Timesync(void)
 {
   sl_status_t status = SL_STATUS_FAIL;
   if (!M4_PS2_STATE_STATUS) {
-    P2P_STATUS_REG |= M4_WAKEUP_TA;
-
-    while (!(P2P_STATUS_REG & TA_IS_ACTIVE))
-      ; // Wait for NWP
+    // Wake up NWP. The matching release is sl_si91x_host_clear_sleep_indicator() below.
+    (void)sli_si91x_req_wakeup();
 
     M4SS_P2P_INTR_SET_REG = M4_REQ_TIME_STAMP_FROM_NWP;
 
@@ -242,6 +242,28 @@ void sli_si91x_raise_side_band_interrupt_to_ta(void)
 {
   // Write the packet pending interrupt to NWP register
   M4SS_P2P_INTR_SET_REG = SIDE_BAND_CRYPTO_INTR;
+}
+
+/**
+ * @fn           void sli_si91x_side_band_crypto_mark_timed_out(void)
+ * @brief        Record that a side-band crypto request timed out before the NWP finished.
+ *               The SIDE_BAND_CRYPTO_DONE ISR then releases the NWP wake hold and the
+ *               side-band in-progress flag when the NWP eventually completes.
+ * @note         Must be called with interrupts disabled, after checking that SIDE_BAND_DONE
+ *               has not been set, so the ISR cannot complete in between.
+ */
+void sli_si91x_side_band_crypto_mark_timed_out(void)
+{
+  sli_si91x_side_band_crypto_timed_out = true;
+}
+
+/**
+ * @fn           bool sli_si91x_side_band_crypto_is_timed_out(void)
+ * @brief        True while a timed-out side-band crypto request is still owned by the NWP.
+ */
+bool sli_si91x_side_band_crypto_is_timed_out(void)
+{
+  return sli_si91x_side_band_crypto_timed_out;
 }
 #endif
 
@@ -338,6 +360,13 @@ sl_status_t sli_m4_interrupt_isr(void)
   //! Below changes are requried for SIDE BAND CRYPTO
   else if (TASS_P2P_INTR_CLEAR & SIDE_BAND_CRYPTO_DONE) {
     osEventFlagsSet(ta_events, SIDE_BAND_DONE);
+    /* If the requester already timed out, nobody is waiting: release the power holds here
+     * so the device can sleep. The driver frees the buffer on its next request. */
+    if (sli_si91x_side_band_crypto_timed_out) {
+      sli_si91x_side_band_crypto_timed_out = false;
+      sli_si91x_update_side_band_crypto_command_status(false);
+      sl_si91x_host_clear_sleep_indicator();
+    }
     // Clear the interrupt
     clear_ta_to_m4_interrupt(SIDE_BAND_CRYPTO_DONE);
   }
@@ -388,9 +417,19 @@ sl_status_t sli_si91x_bus_read_interrupt_status(uint16_t *int_status)
   return RSI_SUCCESS;
 }
 
+// Take one wake hold, then block until the NWP reports active.
+// The hold is released by sl_si91x_host_clear_sleep_indicator().
 sl_status_t sli_si91x_req_wakeup(void)
 {
+  uint32_t primask = __get_PRIMASK();
+
+  __disable_irq();
+  sli_si91x_nwp_wake_refcount++;
   P2P_STATUS_REG |= M4_wakeup_TA;
+  if (primask == 0U) {
+    __enable_irq();
+  }
+
   if (!(P2P_STATUS_REG & TA_is_active)) {
     //!TBD Need add timeout
     while (!(P2P_STATUS_REG & TA_is_active))
@@ -399,9 +438,22 @@ sl_status_t sli_si91x_req_wakeup(void)
   return SL_STATUS_OK;
 }
 
+// Release one wake hold. The NWP may sleep only after the last holder releases.
+// A call with no outstanding hold still clears M4_wakeup_TA (PS2 wake cleanup).
 void sl_si91x_host_clear_sleep_indicator(void)
 {
-  P2P_STATUS_REG &= ~M4_wakeup_TA;
+  uint32_t primask = __get_PRIMASK();
+
+  __disable_irq();
+  if (sli_si91x_nwp_wake_refcount > 0U) {
+    sli_si91x_nwp_wake_refcount--;
+  }
+  if (sli_si91x_nwp_wake_refcount == 0U) {
+    P2P_STATUS_REG &= ~M4_wakeup_TA;
+  }
+  if (primask == 0U) {
+    __enable_irq();
+  }
 }
 
 void IRQ074_Handler(void)
