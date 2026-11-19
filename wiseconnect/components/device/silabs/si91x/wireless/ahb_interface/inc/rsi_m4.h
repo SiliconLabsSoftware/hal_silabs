@@ -73,6 +73,9 @@
 
 #define TASS_P2P_INT_BASE_ADDRESS 0x41050000
 
+/* NWP-side mask clear alias for M4-to-NWP P2P sources. */
+#define NWP_M4SS_P2P_INTR_MASK_CLR (*(volatile uint32_t *)(TASS_P2P_INT_BASE_ADDRESS + 0x9C))
+
 #define TASS_P2P_INTR_SET_REG *(volatile uint32_t *)(TASS_P2P_INT_BASE_ADDRESS + 0x8C)
 #define TASS_P2P_INTR_CLR_REG *(volatile uint32_t *)(TASS_P2P_INT_BASE_ADDRESS + 0x90)
 

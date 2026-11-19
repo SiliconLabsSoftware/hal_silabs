@@ -240,6 +240,12 @@ sl_status_t sli_si91x_M4_TA_Timesync(void)
  */
 void sli_si91x_raise_side_band_interrupt_to_ta(void)
 {
+  /* NWP retention resume can leave the sideband source masked. Restore
+   * delivery before posting a new request; sideband callers are serialized.
+   * This is the NWP input mask, not the M4 completion interrupt mask.
+   */
+  NWP_M4SS_P2P_INTR_MASK_CLR = SIDE_BAND_CRYPTO_INTR;
+  __DSB();
   // Write the packet pending interrupt to NWP register
   M4SS_P2P_INTR_SET_REG = SIDE_BAND_CRYPTO_INTR;
 }
