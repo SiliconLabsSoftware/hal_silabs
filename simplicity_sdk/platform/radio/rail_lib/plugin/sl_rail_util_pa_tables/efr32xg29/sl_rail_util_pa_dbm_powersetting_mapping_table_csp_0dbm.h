@@ -41,7 +41,7 @@ extern "C" {
 #define SL_RAIL_PA_TABLE_0_NUM_VALUES  (29U)
 #define SL_RAIL_PA_TABLE_0_STEP_DDBM   (10U)
 #define SL_RAIL_PA_TABLE_0_MAX_POWER_DDBM     (0U)
-#define SL_RAIL_PA_TABLE_0_MIN_POWER_DDBM     (-292)
+#define SL_RAIL_PA_TABLE_0_MIN_POWER_DDBM     (-272)
 
 #define SL_RAIL_PA_TABLE_0                           \
   {                                                  \
